@@ -3,6 +3,7 @@ set -euo pipefail
 
 plugin_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 qt_bin=/usr/lib/qt6/bin
+omarchy_root=${OMARCHY_PATH:-/usr/share/omarchy}
 
 python3 "$plugin_dir/tests/static_contract.py"
 python3 -m json.tool "$plugin_dir/manifest.json" >/dev/null
@@ -23,11 +24,11 @@ cleanup() {
 }
 trap cleanup EXIT
 mkdir -p "$test_root/qs"
-ln -s /usr/share/omarchy/shell/Commons "$test_root/qs/Commons"
-ln -s /usr/share/omarchy/shell/Ui "$test_root/qs/Ui"
+ln -s "$omarchy_root/shell/Commons" "$test_root/qs/Commons"
+ln -s "$omarchy_root/shell/Ui" "$test_root/qs/Ui"
 cp "$plugin_dir/tests/harness.qml" "$test_root/shell.qml"
-ln -s /usr/share/omarchy/shell/Commons "$test_root/Commons"
-ln -s /usr/share/omarchy/shell/Ui "$test_root/Ui"
+ln -s "$omarchy_root/shell/Commons" "$test_root/Commons"
+ln -s "$omarchy_root/shell/Ui" "$test_root/Ui"
 
 qml_files=(
   "$plugin_dir/BarWidget.qml"

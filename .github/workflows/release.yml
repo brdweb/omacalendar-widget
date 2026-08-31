@@ -13,35 +13,43 @@ permissions:
 jobs:
   current-omarchy-gate:
     name: Current Omarchy release gate
-    runs-on: [self-hosted, linux, x64, omarchy]
+    runs-on: ubuntu-24.04
+    container: archlinux:base-devel
     steps:
+      - name: Install current Arch and Quickshell test runtime
+        run: |
+          pacman -Syu --noconfirm --needed \
+            git jq python quickshell qt6-declarative
       - name: Check out tagged source
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Check out release-reference Omarchy
+        uses: actions/checkout@v4
+        with:
+          repository: omacom/omarchy
+          ref: 13f18b2cb7286fb54f87daf571a031aa6af3d8f0
+          path: omarchy
       - name: Run the complete widget integration suite
-        run: ./tests/run.sh
+        run: |
+          export OMARCHY_PATH="$PWD/omarchy"
+          export PATH="$OMARCHY_PATH/bin:$PATH"
+          ./tests/run.sh
 
   draft-release:
     name: Verify, package, attest, and draft
     needs: current-omarchy-gate
     runs-on: ubuntu-24.04
+    container: archlinux:base-devel
     steps:
+      - name: Install current Arch release dependencies
+        run: |
+          pacman -Syu --noconfirm --needed \
+            git github-cli jq python qt6-declarative
       - name: Check out tagged source
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Install portable test dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes \
-            python3 \
-            qt6-declarative-dev-tools \
-            qml6-module-qtquick \
-            qml6-module-qtquick-window \
-            qml6-module-qtqml-workerscript \
-            qml6-module-qttest
 
       - name: Verify signed tag and paired release metadata
         run: ./scripts/release/verify-release.sh "${GITHUB_REF_NAME}"
@@ -57,7 +65,7 @@ jobs:
             >/dev/null
 
       - name: Run portable contracts
-        run: QT_BIN_DIR=/usr/lib/qt6/bin ./tests/run-portable.sh
+        run: ./tests/run-portable.sh
 
       - name: Create and verify deterministic source archive
         id: package

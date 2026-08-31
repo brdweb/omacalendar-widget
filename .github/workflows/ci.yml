@@ -4,49 +4,34 @@ on:
   push:
   pull_request:
   workflow_dispatch:
-    inputs:
-      run_omarchy:
-        description: Run the current-Omarchy acceptance job
-        required: false
-        default: false
-        type: boolean
 
 permissions:
   contents: read
 
 jobs:
-  portable-contracts:
+  current-omarchy:
     runs-on: ubuntu-24.04
+    container: archlinux:base-devel
     steps:
       - uses: actions/checkout@v4
-      - name: Install Qt QML test runtime
+      - name: Check out release-reference Omarchy
+        uses: actions/checkout@v4
+        with:
+          repository: omacom/omarchy
+          ref: 13f18b2cb7286fb54f87daf571a031aa6af3d8f0
+          path: omarchy
+      - name: Install current Arch and Quickshell test runtime
         run: |
-          sudo apt-get update
-          sudo apt-get install --yes \
-            python3 \
-            ruby \
-            shellcheck \
-            qt6-declarative-dev-tools \
-            qml6-module-qtquick \
-            qml6-module-qtquick-window \
-            qml6-module-qtqml-workerscript \
-            qml6-module-qttest
-      - name: Run portable contracts and model tests
-        run: QT_BIN_DIR=/usr/lib/qt6/bin ./tests/run-portable.sh
+          pacman -Syu --noconfirm --needed \
+            git jq python quickshell qt6-declarative ruby shellcheck
+      - name: Run current-Omarchy integration suite
+        run: |
+          export OMARCHY_PATH="$PWD/omarchy"
+          export PATH="$OMARCHY_PATH/bin:$PATH"
+          ./tests/run.sh
       - name: Check shell scripts and workflow syntax
         run: |
           shellcheck tests/*.sh scripts/release/*.sh
           ruby -e 'require "yaml"; ARGV.each { |path| YAML.parse_file(path) }' \
             .github/workflows/*.yml
           git diff --check
-
-  current-omarchy:
-    # This label is intentionally an acceptance runner: it exercises the real
-    # Quickshell/Omarchy plugin validator and socket lifecycle that Ubuntu does
-    # not package. Public releases require this job, not just portable checks.
-    if: github.event_name == 'workflow_dispatch' && inputs.run_omarchy
-    runs-on: [self-hosted, linux, x64, omarchy]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run current-Omarchy integration suite
-        run: ./tests/run.sh
