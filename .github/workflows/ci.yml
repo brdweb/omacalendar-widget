@@ -31,7 +31,7 @@ jobs:
           shellcheck tests/*.sh scripts/release/*.sh
           ruby -e 'require "yaml"; ARGV.each { |path| YAML.parse_file(path) }' \
             .github/workflows/*.yml
-          git diff --check
+          python tests/check_whitespace.py
       - name: Run current-Omarchy integration suite
         run: |
           export OMARCHY_PATH="$RUNNER_TEMP/omacalendar-omarchy"
