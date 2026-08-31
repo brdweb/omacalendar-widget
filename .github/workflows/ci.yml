@@ -28,6 +28,7 @@ jobs:
             shellcheck \
             qt6-declarative-dev-tools \
             qml6-module-qtquick \
+            qml6-module-qtqml-workerscript \
             qml6-module-qttest
       - name: Run portable contracts and model tests
         run: QT_BIN_DIR=/usr/lib/qt6/bin ./tests/run-portable.sh
