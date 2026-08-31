@@ -6,8 +6,12 @@ qt_bin=/usr/lib/qt6/bin
 omarchy_root=${OMARCHY_PATH:-/usr/share/omarchy}
 
 python3 "$plugin_dir/tests/static_contract.py"
+python3 "$plugin_dir/tests/preview_contract.py"
 python3 -m json.tool "$plugin_dir/manifest.json" >/dev/null
-for shell_script in "$plugin_dir"/tests/*.sh "$plugin_dir"/scripts/release/*.sh; do
+for shell_script in \
+  "$plugin_dir"/tests/*.sh \
+  "$plugin_dir"/scripts/release/*.sh \
+  "$plugin_dir"/tools/preview/*.sh; do
   bash -n "$shell_script"
 done
 
@@ -43,6 +47,7 @@ qml_files=(
   "$plugin_dir/tests/tst_keyboard.qml"
   "$plugin_dir/tests/agenda_harness.qml"
   "$plugin_dir/tests/default_calendar_harness.qml"
+  "$plugin_dir/tools/preview/preview_harness.qml"
 )
 
 for qml_file in "${qml_files[@]}"; do

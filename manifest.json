@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "org.omacalendar.widget",
   "name": "OmaCalendar",
-  "version": "0.1.0-alpha",
+  "version": "0.1.0-beta.1",
   "author": "OmaCalendar contributors",
   "description": "Calendar, agenda, and Up Next controls backed by the local OmaCalendar daemon",
   "license": "MIT",

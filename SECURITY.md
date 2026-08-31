@@ -1,7 +1,7 @@
 # Security policy
 
-OmaCalendar widget `0.1.0-alpha` is an unsupported evaluation prerelease. It is
-not suitable for production or as the only way to access calendar data.
+OmaCalendar widget `0.1.0-beta.1` is an unsupported public-testing prerelease.
+It is not suitable for production or as the only way to access calendar data.
 
 Report suspected vulnerabilities privately with GitHub's **Report a
 vulnerability** form for this repository. Do not open a public issue containing

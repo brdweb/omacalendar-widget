@@ -60,6 +60,13 @@ if release.get("widgetVersion") != version:
     raise SystemExit("release.json widgetVersion does not match the widget tag")
 if release.get("omacalendarProtocolMajor") != 2:
     raise SystemExit("release.json must require OmaCalendar IPC major 2")
+expected_channel = "stable"
+if "-" in version:
+    expected_channel = version.split("-", 1)[1].split(".", 1)[0]
+if release.get("releaseChannel") != expected_channel:
+    raise SystemExit(
+        f"release.json releaseChannel must be {expected_channel} for {version}"
+    )
 app_version = release.get("testedOmaCalendarVersion")
 if not isinstance(app_version, str) or not app_version:
     raise SystemExit("release.json must record testedOmaCalendarVersion")
@@ -78,11 +85,42 @@ if ! grep -Fq "| \`${release_version}\` | \`${app_version}\` | 2 |" \
   exit 1
 fi
 
-for required_file in SECURITY.md release.json docs/COMPATIBILITY.md docs/RELEASE.md; do
+for required_file in \
+  SECURITY.md \
+  release.json \
+  docs/BETA_ACCEPTANCE.md \
+  docs/COMPATIBILITY.md \
+  docs/MARKETPLACE.md \
+  docs/MARKETPLACE_SUBMISSION.md \
+  docs/RELEASE.md; do
   if [[ ! -s "${repository_root}/${required_file}" ]]; then
     echo "required release documentation is missing: ${required_file}" >&2
     exit 1
   fi
 done
+
+preview_count=0
+preview_path=
+for extension in png jpg jpeg webp avif; do
+  candidate="${repository_root}/preview.${extension}"
+  if [[ -e ${candidate} || -L ${candidate} ]]; then
+    if [[ ! -f ${candidate} || -L ${candidate} ]]; then
+      echo "marketplace preview must be a regular, non-symlink file: ${candidate}" >&2
+      exit 1
+    fi
+    preview_count=$((preview_count + 1))
+    preview_path=${candidate}
+  fi
+done
+if [[ ${preview_count} -ne 1 ]]; then
+  echo "release requires exactly one real root marketplace preview image" >&2
+  exit 1
+fi
+preview_size=$(stat -c %s "${preview_path}")
+if [[ ${preview_size} -le 0 || ${preview_size} -gt 52428800 ]]; then
+  echo "marketplace preview must be non-empty and no larger than 50 MB" >&2
+  exit 1
+fi
+python3 "${repository_root}/tools/preview/validate_preview.py" "${preview_path}"
 
 echo "release metadata for ${release_tag} is internally consistent with OmaCalendar v${app_version}"

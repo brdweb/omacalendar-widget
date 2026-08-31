@@ -1,15 +1,19 @@
 # OmaCalendar Omarchy widget
 
 `org.omacalendar.widget` is the thin Omarchy Shell companion for OmaCalendar. It
-shows a configurable clock and Up Next summary in the bar, then opens a
-keyboard-friendly calendar views, selected-day agenda, search, and inline event
-editing. Calendar data, provider networking, credentials,
+shows a configurable clock and Up Next summary in the bar, then opens
+keyboard-friendly Month, Day, Week, and Agenda views with search and inline
+event editing. Calendar data, provider networking, credentials,
 conflict resolution, and durable writes remain owned by `omacalendard`.
 
+![OmaCalendar widget showing a month calendar and agenda populated with synthetic events](preview.png)
+
 This repository is intentionally separate from the desktop application. The
-widget has its own version and release cadence. Widget `0.1.0-alpha` is the
-evaluation companion qualified against OmaCalendar `1.0.0-alpha` over IPC 2;
-neither alpha is a stable or production-supported release.
+widget has its own version and release cadence. Widget `0.1.0-beta.1` is the
+public-testing candidate qualified against the published OmaCalendar
+`1.0.0-alpha` runtime over IPC 2. That app version is compatibility evidence only: app
+and widget versions, tags, and publication dates do not need to match. This
+widget beta is not a stable or production-supported release.
 
 ## Requirements
 
@@ -23,7 +27,7 @@ daemon through socket activation and reads its local cache.
 
 ## Install
 
-After the public repository is available, install and enable the widget with:
+Install and enable the widget from its public repository with:
 
 ```bash
 omarchy plugin add https://github.com/brdweb/omacalendar-widget.git --enable
@@ -35,7 +39,8 @@ event, `S` or `/` to search, and `T` to return to today.
 
 ## Update or remove
 
-Update a Git-managed installation with:
+Update a Git-managed installation, including an existing alpha installation,
+with:
 
 ```bash
 omarchy plugin update org.omacalendar.widget
@@ -46,6 +51,9 @@ Remove a normal Omarchy installation with:
 ```bash
 omarchy plugin remove org.omacalendar.widget
 ```
+
+Removing the widget leaves the separately installed OmaCalendar application,
+daemon, calendars, and credentials unchanged.
 
 If the desktop application's transactional helper installed the widget and
 replaced the clock or shortcut, restore the exact prior layout instead:
@@ -71,8 +79,9 @@ center anchor, and shortcut configuration.
 - The socket client caps incoming frames at 1 MiB and requires IPC major 2.
 - Meeting and OmaCalendar links are opened through `xdg-open`; arbitrary
   executable commands are never accepted from daemon data.
-- A missing daemon, an incompatible protocol, stale data, authentication
-  trouble, failed operations, and conflicts are visually distinct states.
+- A missing daemon or incompatible protocol prevents a fresh snapshot. Provider
+  authorization, operation, conflict, and synchronization diagnostics stay in
+  the desktop application; the widget quietly retains its last usable snapshot.
 
 ## Install for development
 
@@ -89,7 +98,8 @@ installs it with:
 omarchy plugin add https://github.com/brdweb/omacalendar-widget.git --enable
 ```
 
-For a local alpha checkout, use the desktop repository's transactional helper:
+For a local prerelease checkout, use the desktop repository's transactional
+helper:
 
 ```bash
 omacalendar-widgetctl install --source /absolute/path/to/omacalendar-widget
@@ -237,14 +247,27 @@ The widget hands complex workflows to these registered desktop links:
   placement to the current shell's `KeyboardPanel` anchor primitive.
 
 `tests/run-portable.sh` runs the subset that needs only Python and Qt QML Test.
-GitHub CI runs that subset on Ubuntu and the complete suite on a labeled
-current-Omarchy acceptance runner.
+GitHub CI runs the complete headless suite in an Arch container against the
+pinned Omarchy 4.0.2 release reference. Real compositor and hardware acceptance
+still runs on a current Omarchy workstation.
 
 Before a public release, the automated checks must still be followed by a real
 Hyprland acceptance pass: open and keyboard-drive the popup on every edge, move
 it between at least two differently scaled monitors, hot-reload a theme while it
 is open, restart the real daemon, and verify provider-offline cached data. Those
 compositor and hardware cases cannot be proven by an offscreen smoke test.
+
+Regenerate the marketplace preview without reading real calendar data or
+capturing the live desktop:
+
+```bash
+./tools/preview/capture-preview.sh
+```
+
+The capture runs the real panel and components on an isolated 800×800 Hyprland
+headless output, feeds them a deterministic synthetic IPC snapshot, strips PNG
+metadata, and rejects the result unless OCR finds the expected fixture labels
+and no email address or local user path.
 
 ## Release candidates
 
@@ -256,7 +279,8 @@ creates a **draft** candidate containing a deterministic source archive,
 `SHA256SUMS`, an SPDX JSON SBOM, and GitHub provenance/SBOM attestations. It
 never publishes a release automatically.
 
-The current widget candidate is `0.1.0-alpha`, qualified against OmaCalendar
-`1.0.0-alpha`. Stable publication remains blocked on both projects' owner
-acceptance gates. Marketplace publication steps and prepared listing text are
-in [docs/MARKETPLACE.md](docs/MARKETPLACE.md).
+The current widget candidate is `0.1.0-beta.1`, qualified against OmaCalendar
+`1.0.0-alpha`; the recorded target does not synchronize the
+two release paths. Publication remains blocked until the candidate acceptance
+record is complete. Marketplace publication steps and the ready-to-submit issue
+body are in [docs/MARKETPLACE.md](docs/MARKETPLACE.md).

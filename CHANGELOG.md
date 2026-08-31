@@ -6,6 +6,25 @@ begin.
 
 ## [Unreleased]
 
+## [0.1.0-beta.1] - 2026-08-31
+
+### Added
+
+- Beta acceptance record covering real Omarchy compositor, daemon, install,
+  upgrade, removal, and privacy-safe preview verification.
+- A ready-to-submit Omarchy Plugins marketplace issue body with the canonical
+  category, tags, dependency note, and owner checklist.
+
+### Changed
+
+- Advanced the independent widget release metadata to `0.1.0-beta.1` and
+  recorded the published OmaCalendar `1.0.0-alpha` as its IPC 2 qualification target without
+  coupling the projects' versions or release dates.
+- Updated installation, alpha-to-beta upgrade, removal, compatibility, release,
+  and current marketplace documentation.
+- Made a real root marketplace preview a release gate; mockups and screenshots
+  containing private calendar data are not accepted.
+
 ## [0.1.0-alpha] - 2026-08-30
 
 ### Added
@@ -60,5 +79,6 @@ begin.
 - Kept inline event creation and editing while removing invitation and reminder
   controls from the compact detail area.
 
-[Unreleased]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-alpha...HEAD
+[Unreleased]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-beta.1...HEAD
+[0.1.0-beta.1]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-alpha...v0.1.0-beta.1
 [0.1.0-alpha]: https://github.com/brdweb/omacalendar-widget/releases/tag/v0.1.0-alpha
