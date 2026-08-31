@@ -24,15 +24,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Check out release-reference Omarchy
-        uses: actions/checkout@v4
-        with:
-          repository: omacom/omarchy
-          ref: 13f18b2cb7286fb54f87daf571a031aa6af3d8f0
-          path: omarchy
+      - name: Fetch release-reference Omarchy
+        run: |
+          omarchy_root="$RUNNER_TEMP/omacalendar-omarchy"
+          git init "$omarchy_root"
+          git -C "$omarchy_root" remote add origin https://github.com/omacom/omarchy.git
+          git -C "$omarchy_root" fetch --depth=1 origin \
+            13f18b2cb7286fb54f87daf571a031aa6af3d8f0
+          git -C "$omarchy_root" checkout --detach FETCH_HEAD
       - name: Run the complete widget integration suite
         run: |
-          export OMARCHY_PATH="$PWD/omarchy"
+          export OMARCHY_PATH="$RUNNER_TEMP/omacalendar-omarchy"
           export PATH="$OMARCHY_PATH/bin:$PATH"
           ./tests/run.sh
 
