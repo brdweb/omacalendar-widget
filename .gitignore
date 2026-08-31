@@ -1,0 +1,8 @@
+*.qmlc
+*.jsc
+.cache/
+build/
+artifacts/
+stage/
+__pycache__/
+*.py[cod]

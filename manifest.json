@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "id": "org.omacalendar.widget",
+  "name": "OmaCalendar",
+  "version": "0.1.0-alpha",
+  "author": "OmaCalendar contributors",
+  "description": "Calendar, agenda, and Up Next controls backed by the local OmaCalendar daemon",
+  "license": "MIT",
+  "homepage": "https://github.com/brdweb/omacalendar-widget",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "OmaCalendar",
+    "description": "Date, Up Next, and a compact calendar popup",
+    "category": "Time",
+    "defaultSection": "center",
+    "allowMultiple": false,
+    "defaults": {
+      "format": "ddd HH:mm",
+      "verticalFormat": "HH\n—\nmm",
+      "showUpNext": true,
+      "showCountdown": true,
+      "barPrivacy": "full",
+      "refreshSeconds": 60
+    },
+    "schema": [
+      {
+        "key": "format",
+        "type": "string",
+        "label": "Horizontal date and time format",
+        "defaultValue": "ddd HH:mm"
+      },
+      {
+        "key": "verticalFormat",
+        "type": "string",
+        "label": "Vertical date and time format",
+        "defaultValue": "HH\n—\nmm"
+      },
+      {
+        "key": "showUpNext",
+        "type": "boolean",
+        "label": "Show Up Next",
+        "defaultValue": true
+      },
+      {
+        "key": "showCountdown",
+        "type": "boolean",
+        "label": "Show countdown",
+        "defaultValue": true
+      },
+      {
+        "key": "barPrivacy",
+        "type": "enum",
+        "label": "Event title privacy",
+        "options": [
+          "full",
+          "hidden"
+        ],
+        "defaultValue": "full"
+      },
+      {
+        "key": "refreshSeconds",
+        "type": "integer",
+        "label": "Fallback refresh interval (seconds)",
+        "min": 15,
+        "max": 3600,
+        "step": 15,
+        "defaultValue": 60
+      }
+    ]
+  },
+  "compatibility": {
+    "omacalendarProtocolMajor": 2,
+    "minimumOmaCalendarProtocolMinor": 0,
+    "minimumOmarchy": "4.0.0",
+    "minimumQuickshell": "0.3.1"
+  }
+}

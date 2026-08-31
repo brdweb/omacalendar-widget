@@ -1,0 +1,6 @@
+{
+  "widgetVersion": "0.1.0-alpha",
+  "testedOmaCalendarVersion": "1.0.0-alpha",
+  "omacalendarProtocolMajor": 2,
+  "releaseChannel": "alpha"
+}

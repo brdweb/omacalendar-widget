@@ -1,0 +1,127 @@
+name: Release candidate
+
+on:
+  push:
+    tags:
+      - 'v[0-9]*.[0-9]*.[0-9]*'
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  current-omarchy-gate:
+    name: Current Omarchy release gate
+    runs-on: [self-hosted, linux, x64, omarchy]
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run the complete widget integration suite
+        run: ./tests/run.sh
+
+  draft-release:
+    name: Verify, package, attest, and draft
+    needs: current-omarchy-gate
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install portable test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes \
+            python3 \
+            qt6-declarative-dev-tools \
+            qml6-module-qtquick \
+            qml6-module-qttest
+
+      - name: Verify signed tag and paired release metadata
+        run: ./scripts/release/verify-release.sh "${GITHUB_REF_NAME}"
+
+      - name: Require the qualified OmaCalendar app tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          app_version=$(jq -r .testedOmaCalendarVersion release.json)
+          test -n "${app_version}" && test "${app_version}" != null
+          gh api \
+            "repos/${GITHUB_REPOSITORY_OWNER}/omacalendar/git/ref/tags/v${app_version}" \
+            >/dev/null
+
+      - name: Run portable contracts
+        run: QT_BIN_DIR=/usr/lib/qt6/bin ./tests/run-portable.sh
+
+      - name: Create and verify deterministic source archive
+        id: package
+        run: |
+          mkdir -p artifacts stage
+          ./scripts/release/package-source.sh "${GITHUB_REF_NAME}" artifacts
+          version=${GITHUB_REF_NAME#v}
+          archive="omacalendar-widget-${version}-source.tar.gz"
+          tar -xzf "artifacts/${archive}" -C stage
+          echo "version=${version}" >>"${GITHUB_OUTPUT}"
+          echo "archive=${archive}" >>"${GITHUB_OUTPUT}"
+
+      - name: Generate SPDX SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          path: stage
+          format: spdx-json
+          output-file: artifacts/omacalendar-widget-${{ steps.package.outputs.version }}.spdx.json
+          artifact-name: omacalendar-widget-${{ steps.package.outputs.version }}-sbom.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Write and verify checksums
+        working-directory: artifacts
+        run: |
+          LC_ALL=C sha256sum \
+            "${{ steps.package.outputs.archive }}" \
+            "omacalendar-widget-${{ steps.package.outputs.version }}.spdx.json" \
+            >SHA256SUMS
+          sha256sum --check SHA256SUMS
+
+      - name: Attest source provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            artifacts/${{ steps.package.outputs.archive }}
+            artifacts/SHA256SUMS
+
+      - name: Attest archive SBOM
+        uses: actions/attest@v4
+        with:
+          subject-path: artifacts/${{ steps.package.outputs.archive }}
+          sbom-path: artifacts/omacalendar-widget-${{ steps.package.outputs.version }}.spdx.json
+
+      - name: Upload candidate artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: omacalendar-widget-${{ steps.package.outputs.version }}-release-candidate
+          path: artifacts/
+          if-no-files-found: error
+
+      - name: Create draft GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ steps.package.outputs.version }}
+        run: |
+          existing_state=$(gh release view "${GITHUB_REF_NAME}" --json isDraft --jq .isDraft 2>/dev/null || echo missing)
+          if [[ ${existing_state} == true ]]; then
+            gh release upload "${GITHUB_REF_NAME}" artifacts/* --clobber
+          elif [[ ${existing_state} == false ]]; then
+            echo "refusing to replace assets on an already published release" >&2
+            exit 1
+          else
+            gh release create "${GITHUB_REF_NAME}" artifacts/* \
+              --draft \
+              --generate-notes \
+              --title "OmaCalendar widget ${RELEASE_VERSION}" \
+              --verify-tag
+          fi
