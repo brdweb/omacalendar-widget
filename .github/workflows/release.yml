@@ -54,7 +54,10 @@ jobs:
           fetch-depth: 0
 
       - name: Trust the container checkout
-        run: git config --global --add safe.directory "$PWD"
+        run: |
+          git config --global --add safe.directory "$PWD"
+          git fetch --force origin \
+            "refs/tags/${GITHUB_REF_NAME}:refs/tags/${GITHUB_REF_NAME}"
 
       - name: Verify signed tag and paired release metadata
         env:
