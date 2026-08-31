@@ -53,8 +53,22 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Trust the container checkout
+        run: git config --global --add safe.directory "$PWD"
+
       - name: Verify signed tag and paired release metadata
-        run: ./scripts/release/verify-release.sh "${GITHUB_REF_NAME}"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag_object=$(git rev-parse "${GITHUB_REF_NAME}^{tag}")
+          verified=$(gh api \
+            "repos/${GITHUB_REPOSITORY}/git/tags/${tag_object}" \
+            --jq '.verification.verified')
+          if [[ ${verified} != true ]]; then
+            echo "GitHub did not verify the annotated tag signature" >&2
+            exit 1
+          fi
+          ./scripts/release/verify-release.sh "${GITHUB_REF_NAME}"
 
       - name: Require the qualified OmaCalendar app tag
         env:
