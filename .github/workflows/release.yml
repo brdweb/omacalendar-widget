@@ -19,7 +19,7 @@ jobs:
       - name: Install current Arch and Quickshell test runtime
         run: |
           pacman -Syu --noconfirm --needed \
-            git jq python quickshell qt6-declarative
+            git jq python quickshell qt6-declarative weston
       - name: Check out tagged source
         uses: actions/checkout@v4
         with:
@@ -36,7 +36,7 @@ jobs:
         run: |
           export OMARCHY_PATH="$RUNNER_TEMP/omacalendar-omarchy"
           export PATH="$OMARCHY_PATH/bin:$PATH"
-          ./tests/run.sh
+          ./tests/run-headless-omarchy.sh
 
   draft-release:
     name: Verify, package, attest, and draft
