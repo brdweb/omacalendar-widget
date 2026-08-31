@@ -36,4 +36,4 @@ jobs:
           shellcheck tests/*.sh scripts/release/*.sh
           ruby -e 'require "yaml"; ARGV.each { |path| YAML.parse_file(path) }' \
             .github/workflows/*.yml
-          git diff --check
+          git -C "$GITHUB_WORKSPACE" diff --check
