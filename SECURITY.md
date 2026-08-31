@@ -14,3 +14,11 @@ daemon database or Secret Service, store calendar snapshots, carry provider
 credentials, or contact remote calendar services. A local attacker already
 able to execute arbitrary code as the same Unix user is outside that isolation
 boundary.
+
+Current Omarchy plugin installation is Git-based and cannot pin a tag or
+commit: add/update follows the repository's remote default `HEAD`. This
+repository therefore treats default branch `main` as a release-only install
+boundary. It advances only by fast-forward to the exact commit of a reviewed,
+signed, published release tag; development remains on other branches. Users who
+need an immutable source should install the checksummed, GitHub-attested release
+archive documented in `README.md`.

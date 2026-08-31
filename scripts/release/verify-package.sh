@@ -88,10 +88,18 @@ if manifest.get("version") != version:
 compatibility = manifest.get("compatibility", {})
 if compatibility.get("omacalendarProtocolMajor") != 2:
     raise SystemExit("release archive does not require OmaCalendar IPC major 2")
+if compatibility.get("minimumOmaCalendarProtocolMinor") != 0:
+    raise SystemExit("release archive does not require OmaCalendar IPC minor 0 or newer")
 if release.get("widgetVersion") != version:
     raise SystemExit("release archive metadata version does not match its filename")
 if release.get("omacalendarProtocolMajor") != 2:
     raise SystemExit("release archive metadata does not require OmaCalendar IPC major 2")
+if release.get("minimumOmaCalendarProtocolMinor") != 0:
+    raise SystemExit("release archive metadata does not require OmaCalendar IPC minor 0 or newer")
+if release.get("trustedInstallBranch") != "main":
+    raise SystemExit("release archive metadata changed the trusted install branch")
+if release.get("trustedInstallTag") != f"v{version}":
+    raise SystemExit("release archive metadata does not name its signed install tag")
 if not release.get("testedOmaCalendarVersion"):
     raise SystemExit("release archive metadata omits its tested app version")
 

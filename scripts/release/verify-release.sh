@@ -56,10 +56,14 @@ if manifest.get("version") != version:
 compatibility = manifest.get("compatibility", {})
 if compatibility.get("omacalendarProtocolMajor") != 2:
     raise SystemExit("release manifest must require OmaCalendar IPC major 2")
+if compatibility.get("minimumOmaCalendarProtocolMinor") != 0:
+    raise SystemExit("release manifest must require OmaCalendar IPC minor 0 or newer")
 if release.get("widgetVersion") != version:
     raise SystemExit("release.json widgetVersion does not match the widget tag")
 if release.get("omacalendarProtocolMajor") != 2:
     raise SystemExit("release.json must require OmaCalendar IPC major 2")
+if release.get("minimumOmaCalendarProtocolMinor") != 0:
+    raise SystemExit("release.json must require OmaCalendar IPC minor 0 or newer")
 expected_channel = "stable"
 if "-" in version:
     expected_channel = version.split("-", 1)[1].split(".", 1)[0]
@@ -67,6 +71,10 @@ if release.get("releaseChannel") != expected_channel:
     raise SystemExit(
         f"release.json releaseChannel must be {expected_channel} for {version}"
     )
+if release.get("trustedInstallBranch") != "main":
+    raise SystemExit("release.json trustedInstallBranch must remain main")
+if release.get("trustedInstallTag") != f"v{version}":
+    raise SystemExit("release.json trustedInstallTag must match the widget tag")
 app_version = release.get("testedOmaCalendarVersion")
 if not isinstance(app_version, str) or not app_version:
     raise SystemExit("release.json must record testedOmaCalendarVersion")

@@ -25,13 +25,63 @@ widget beta is not a stable or production-supported release.
 The desktop application does not need to remain open. The widget starts the
 daemon through socket activation and reads its local cache.
 
-## Install
+## Install a verified release archive
 
-Install and enable the widget from its public repository with:
+After `v0.1.0-beta.1` is published, the immutable public-install path is the
+source archive produced from that reviewed signed tag. Download it into an
+empty directory, verify its exact checksum plus both GitHub attestations,
+validate the extracted plugin, and only then place it in Omarchy's user plugin
+directory:
+
+```bash
+set -euo pipefail
+release_version=0.1.0-beta.1
+archive="omacalendar-widget-${release_version}-source.tar.gz"
+release_url="https://github.com/brdweb/omacalendar-widget/releases/download/v${release_version}"
+curl -fLO "${release_url}/${archive}"
+curl -fLO "${release_url}/SHA256SUMS"
+grep " ${archive}$" SHA256SUMS | sha256sum --check
+gh attestation verify "${archive}" --repo brdweb/omacalendar-widget \
+  --source-ref "refs/tags/v${release_version}" \
+  --signer-workflow brdweb/omacalendar-widget/.github/workflows/release.yml
+gh attestation verify "${archive}" --repo brdweb/omacalendar-widget \
+  --predicate-type https://spdx.dev/Document/v2.3 \
+  --source-ref "refs/tags/v${release_version}" \
+  --signer-workflow brdweb/omacalendar-widget/.github/workflows/release.yml
+tar -xzf "${archive}"
+source_dir="$PWD/omacalendar-widget-${release_version}"
+omarchy plugin validate "${source_dir}"
+plugins_dir="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/plugins"
+target="${plugins_dir}/org.omacalendar.widget"
+if [[ -e ${target} || -L ${target} ]]; then
+  echo "OmaCalendar is already installed; follow the update instructions below" >&2
+  exit 1
+fi
+mkdir -p "${plugins_dir}"
+mv "${source_dir}" "${target}"
+omarchy-shell shell rescanPlugins
+omarchy plugin enable org.omacalendar.widget --section center
+```
+
+The GitHub CLI is required for the attestation checks. This installation is a
+plain reviewed snapshot without `.git`, so `omarchy plugin update` cannot move
+it to unreviewed upstream code.
+
+## Marketplace-compatible Git install
+
+Omarchy's current plugin CLI cannot select a tag or commit. `plugin add` clones
+the remote default branch, and `plugin update` fetches and fast-forwards
+`origin HEAD`. The official repository therefore treats its default
+release-only `main` branch as an install channel: it advances only to the exact
+commit of a reviewed, signed, published release tag, never to development
+commits. With that trust boundary understood, install and enable with:
 
 ```bash
 omarchy plugin add https://github.com/brdweb/omacalendar-widget.git --enable
 ```
+
+Use the verified archive path when an exact immutable release is required or
+the release-only branch invariant cannot be independently confirmed.
 
 Open the popup by clicking the OmaCalendar item in the bar. Use the view tabs
 or number keys `1`–`4` for Month, Day, Week, and Agenda. Press `N` to create an
@@ -40,10 +90,31 @@ event, `S` or `/` to search, and `T` to return to today.
 ## Update or remove
 
 Update a Git-managed installation, including an existing alpha installation,
-with:
+from the next reviewed commit promoted to release-only `main` with:
 
 ```bash
 omarchy plugin update org.omacalendar.widget
+```
+
+For an archive installation, download, attest, extract, and validate the newer
+release exactly as above. Then replace the snapshot without changing the
+external Omarchy layout and settings, retaining the old directory as a hidden
+rollback backup until the new widget has been exercised:
+
+```bash
+plugins_dir="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/plugins"
+target="${plugins_dir}/org.omacalendar.widget"
+source_dir="$PWD/omacalendar-widget-${release_version}"
+backup="${plugins_dir}/.org.omacalendar.widget.bak.$(date -u +%Y%m%d%H%M%S)"
+omarchy plugin validate "${source_dir}"
+[[ -d ${target} && ! -L ${target} ]]
+mv "${target}" "${backup}"
+if ! mv "${source_dir}" "${target}"; then
+  mv "${backup}" "${target}"
+  exit 1
+fi
+omarchy-shell shell rescanPlugins
+echo "Previous snapshot retained at ${backup}"
 ```
 
 Remove a normal Omarchy installation with:
@@ -91,15 +162,9 @@ Validate the checkout first:
 ./tests/run.sh
 ```
 
-Once this repository is published at its official trusted Git URL, Omarchy
-installs it with:
-
-```bash
-omarchy plugin add https://github.com/brdweb/omacalendar-widget.git --enable
-```
-
-For a local prerelease checkout, use the desktop repository's transactional
-helper:
+The public Git URL intentionally exposes release-only `main`, not the active
+development branch. For a local prerelease checkout, use the desktop
+repository's transactional helper:
 
 ```bash
 omacalendar-widgetctl install --source /absolute/path/to/omacalendar-widget

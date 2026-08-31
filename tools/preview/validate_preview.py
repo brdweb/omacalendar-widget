@@ -27,11 +27,67 @@ EXPECTED_TEXT = (
     "search",
     "accounts",
 )
+# These are the only fixture-owned strings expected to be visible in the
+# committed preview. Keep this list synchronized with preview_snapshot() in
+# fake_preview_daemon.py; the focused preview contract verifies that mapping.
+SYNTHETIC_FIXTURE_TEXT_ALLOWLIST = (
+    "All Calendars",
+    "Release milestone",
+    "Design review",
+    "Studio A",
+    "Product planning",
+    "Focus block",
+)
+STATIC_PREVIEW_TEXT_ALLOWLIST = (
+    "Monday August",
+    "Now",
+    "Up Next",
+    "in",
+    "Month",
+    "Day",
+    "Week",
+    "Agenda",
+    "Today",
+    "Search",
+    "New",
+    "All Day",
+    "Accounts",
+)
+# The committed image is deliberately fixed to August 2026. Calendar day and
+# time tokens are UI output derived from that fixture, not arbitrary OCR text.
+CALENDAR_DAY_TOKENS = frozenset(str(day) for day in range(1, 32))
+FIXTURE_DATE_TIME_TOKENS = frozenset({"00", "09", "1100", "1400", "2026", "45m"})
+# Tesseract 5.5 currently merges nearby glyphs in the committed image. These
+# reviewed artifacts are tolerated explicitly instead of weakening the entire
+# OCR result to a denylist.
+KNOWN_TESSERACT_NOISE_TOKENS = frozenset(
+    {"0", "320", "330", "allday", "anew", "m", "vweek"}
+)
 PRIVATE_TEXT_PATTERNS = (
     re.compile(r"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}", re.IGNORECASE),
     re.compile(r"/(?:home|users)/", re.IGNORECASE),
     re.compile(r"\b(?:gmail|outlook|icloud)\.com\b", re.IGNORECASE),
 )
+
+
+def ocr_tokens(text: str) -> tuple[str, ...]:
+    """Return Unicode-aware lowercase word/number tokens from OCR output."""
+
+    return tuple(re.findall(r"[^\W_]+", text.lower(), flags=re.UNICODE))
+
+
+def allowlisted_ocr_tokens() -> frozenset[str]:
+    fixture_and_ui = " ".join(
+        SYNTHETIC_FIXTURE_TEXT_ALLOWLIST + STATIC_PREVIEW_TEXT_ALLOWLIST
+    )
+    return frozenset(ocr_tokens(fixture_and_ui)).union(
+        CALENDAR_DAY_TOKENS,
+        FIXTURE_DATE_TIME_TOKENS,
+        KNOWN_TESSERACT_NOISE_TOKENS,
+    )
+
+
+ALLOWED_OCR_TOKENS = allowlisted_ocr_tokens()
 
 
 def fail(message: str) -> None:
@@ -90,6 +146,24 @@ def inspect_png(path: Path) -> tuple[int, int, list[str]]:
     return width, height, [chunk.decode("ascii") for chunk in chunks]
 
 
+def validate_ocr_text(text: str) -> None:
+    normalized = re.sub(r"[^a-z0-9]+", " ", text.lower()).strip()
+    for expected in EXPECTED_TEXT:
+        if expected not in normalized:
+            fail(f"OCR did not find the synthetic label {expected!r}")
+    for pattern in PRIVATE_TEXT_PATTERNS:
+        if pattern.search(text):
+            fail(f"OCR found text matching the private-data pattern {pattern.pattern!r}")
+
+    unexpected_tokens = set(ocr_tokens(text)).difference(ALLOWED_OCR_TOKENS)
+    if unexpected_tokens:
+        # Do not echo unexpected OCR content into logs: it may itself be private.
+        fail(
+            f"OCR found {len(unexpected_tokens)} token(s) outside the explicit "
+            "synthetic preview allowlist"
+        )
+
+
 def inspect_ocr(path: Path) -> str:
     result = subprocess.run(
         ["tesseract", str(path), "stdout"],
@@ -99,13 +173,7 @@ def inspect_ocr(path: Path) -> str:
         stderr=subprocess.PIPE,
     )
     text = result.stdout.strip()
-    normalized = re.sub(r"[^a-z0-9]+", " ", text.lower()).strip()
-    for expected in EXPECTED_TEXT:
-        if expected not in normalized:
-            fail(f"OCR did not find the synthetic label {expected!r}")
-    for pattern in PRIVATE_TEXT_PATTERNS:
-        if pattern.search(text):
-            fail(f"OCR found text matching the private-data pattern {pattern.pattern!r}")
+    validate_ocr_text(text)
     return text
 
 

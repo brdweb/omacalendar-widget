@@ -2,5 +2,8 @@
   "widgetVersion": "0.1.0-beta.1",
   "testedOmaCalendarVersion": "1.0.0-alpha",
   "omacalendarProtocolMajor": 2,
-  "releaseChannel": "beta"
+  "minimumOmaCalendarProtocolMinor": 0,
+  "releaseChannel": "beta",
+  "trustedInstallBranch": "main",
+  "trustedInstallTag": "v0.1.0-beta.1"
 }

@@ -2,7 +2,11 @@
 
 The OmaCalendar widget is published independently from the desktop application.
 Submit only after the widget repository is public, `v0.1.0-beta.1` is published,
-and the exact marketplace candidate commit is available on the default branch.
+and remote default branch `main` points to that signed tag's exact commit.
+Current Omarchy releases clone and update the repository's remote default
+`HEAD`; the marketplace's reviewed snapshot does not pin the user's checkout.
+For that reason `main` is a release-only install branch and must never receive
+development commits.
 
 The authoritative publisher guide is
 [Omarchy Plugins: Publish your plugin](https://plugins.omarchy.org/publish.html).
@@ -25,6 +29,12 @@ below.
 - Real, privacy-safe root preview image named `preview.png`
 - Published widget beta and exact compatibility record:
   widget `0.1.0-beta.1`, OmaCalendar `1.0.0-alpha`, IPC major 2
+- `release.json` names trusted install branch `main` and signed install tag
+  `v0.1.0-beta.1`
+- GitHub's default branch is release-only `main`; its remote `HEAD`, branch tip,
+  and the peeled signed tag all resolve to the same accepted commit
+- Development remains on feature branches until a signed release is published
+  and deliberately promoted to `main` by fast-forward
 
 The recorded app version is the build used to qualify the widget's IPC
 compatibility. It does not require matching app/widget version numbers or a
@@ -45,6 +55,8 @@ personal calendar data, and no mockup. The marketplace accepts a preview up to
 - Tags: `bar, quickshell`
 - Suggested missing tag: `calendar`
 - Repository URL: `https://github.com/brdweb/omacalendar-widget`
+- Install trust boundary: repository default branch is release-only `main`, at
+  the exact commit of signed tag `v0.1.0-beta.1`
 
 Before opening the submission, search the registry and existing issues for the
 permanent plugin ID and confirm it is still available. The ID
@@ -72,6 +84,13 @@ scan the exact observed commit and comment on the issue. A marketplace
 maintainer must review that evidence and apply `approved-and-verified` before
 publication. Fix the existing repository or issue if validation fails; do not
 open a duplicate submission.
+
+That exact marketplace evidence does not change the current Omarchy transport:
+`omarchy plugin add` performs a normal clone and `omarchy plugin update`
+fast-forwards `origin HEAD`. Before initial submission or a newer-commit
+verification request, run the remote branch/tag checks in
+[`RELEASE.md`](RELEASE.md). If any commit differs, do not submit or promote the
+listing; restore release-only `main` to the accepted signed-tag commit first.
 
 Creating the marketplace issue is an external publication action. Review the
 completed title and body, confirm ownership of the repository and preview, and

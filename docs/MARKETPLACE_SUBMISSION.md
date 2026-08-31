@@ -21,7 +21,12 @@ Widget 0.1.0-beta.1 is qualified with OmaCalendar 1.0.0-alpha, but the projects'
 versions and release schedules are independent. The desktop application does
 not need to remain open; systemd user socket activation starts the daemon on
 demand. The widget accesses only the user-local OmaCalendar socket and does not
-contact calendar providers.
+contact calendar providers. Current Omarchy add/update commands follow the
+repository's remote default HEAD, so `main` is maintained as a release-only
+install branch at the exact commit of signed tag `v0.1.0-beta.1`; development
+commits are not merged there. Users who require an immutable snapshot can use
+the checksummed, GitHub-attested signed-release archive documented in the root
+README.
 
 ### Submission checklist
 

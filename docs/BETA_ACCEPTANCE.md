@@ -20,16 +20,22 @@ issues and rerun affected checks after the fix.
 - [ ] `./tests/run.sh` passes on the candidate checkout.
 - [ ] GitHub CI and secret scanning pass on the candidate commit.
 - [ ] `release.json`, `manifest.json`, changelog, and compatibility metadata agree.
-- [ ] Signed app tag `v1.0.0-alpha` exists and exposes the recorded IPC major.
+- [ ] App tag `v1.0.0-alpha` is annotated and GitHub-signature-verified, resolves
+      to a commit, has a published non-draft release, and its tagged source
+      exposes the recorded IPC major and minimum minor.
 - [ ] Signed widget tag verification, deterministic archive, checksums, SBOM,
       and attestations pass from a clean checkout.
 
 ## Install, upgrade, and removal
 
-- [ ] A fresh `omarchy plugin add … --enable` install succeeds and appears once
-      in the configured bar section.
+- [ ] The checksummed release archive passes both provenance and SPDX
+      attestation verification, plugin validation, and a fresh snapshot install.
+- [ ] A fresh `omarchy plugin add … --enable` install from release-only `main`
+      resolves to the exact signed `v0.1.0-beta.1` commit and appears once in the
+      configured bar section.
 - [ ] Updating an installed `0.1.0-alpha` checkout preserves placement and widget
-      settings and loads `0.1.0-beta.1`.
+      settings, fast-forwards only to release-only `main`, and loads
+      `0.1.0-beta.1` from the signed tag commit.
 - [ ] `omarchy plugin remove org.omacalendar.widget` removes only the plugin and
       leaves the OmaCalendar app, daemon, data, and credentials intact.
 - [ ] The transactional `omacalendar-widgetctl restore` path restores the exact
@@ -55,6 +61,9 @@ issues and rerun affected checks after the fix.
       contains no personal calendar, account, notification, or desktop data.
 - [ ] The public beta release and its checksums, SBOM, and attestations have been
       downloaded and independently verified.
+- [ ] Remote default `HEAD`, release-only `main`, and peeled signed tag
+      `v0.1.0-beta.1^{}` resolve to the same accepted 40-character commit; force
+      pushes and development commits are prohibited on `main`.
 - [ ] `org.omacalendar.widget` and the repository are absent from the live
       marketplace registry and existing submission issues.
 - [ ] The owner has reviewed the exact `[Plugin]: OmaCalendar` title and

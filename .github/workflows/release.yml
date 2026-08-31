@@ -75,15 +75,10 @@ jobs:
           fi
           ./scripts/release/verify-release.sh "${GITHUB_REF_NAME}"
 
-      - name: Require the qualified OmaCalendar app tag
+      - name: Verify the qualified published OmaCalendar app release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          app_version=$(jq -r .testedOmaCalendarVersion release.json)
-          test -n "${app_version}" && test "${app_version}" != null
-          gh api \
-            "repos/${GITHUB_REPOSITORY_OWNER}/omacalendar/git/ref/tags/v${app_version}" \
-            >/dev/null
+        run: python3 scripts/release/verify-qualified-app.py
 
       - name: Run portable contracts
         run: ./tests/run-portable.sh

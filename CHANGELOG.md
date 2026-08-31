@@ -6,6 +6,12 @@ begin.
 
 ## [Unreleased]
 
+### Fixed
+
+- Bound public Git installs to a release-only default branch and documented the
+  attested signed-release archive as the immutable installation path because
+  current Omarchy plugin add/update commands cannot select a tag or commit.
+
 ## [0.1.0-beta.1] - 2026-08-31
 
 ### Added
