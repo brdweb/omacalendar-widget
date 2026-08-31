@@ -13,11 +13,11 @@ jobs:
     runs-on: ubuntu-24.04
     container: archlinux:base-devel
     steps:
-      - uses: actions/checkout@v4
       - name: Install current Arch and Quickshell test runtime
         run: |
           pacman -Syu --noconfirm --needed \
             git jq python quickshell qt6-declarative ruby shellcheck weston
+      - uses: actions/checkout@v4
       - name: Fetch release-reference Omarchy
         run: |
           omarchy_root="$RUNNER_TEMP/omacalendar-omarchy"
