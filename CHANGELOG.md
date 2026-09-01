@@ -28,6 +28,8 @@ begin.
   coupling the projects' versions or release dates.
 - Updated installation, alpha-to-beta upgrade, removal, compatibility, release,
   and current marketplace documentation.
+- Added exact get, build, test, install, and socket-activation steps for the
+  qualified desktop app, including its current Google OAuth verification status.
 - Made a real root marketplace preview a release gate; mockups and screenshots
   containing private calendar data are not accepted.
 

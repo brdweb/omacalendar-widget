@@ -25,6 +25,39 @@ widget beta is not a stable or production-supported release.
 The desktop application does not need to remain open. The widget starts the
 daemon through socket activation and reads its local cache.
 
+## Install the required OmaCalendar app
+
+The widget is qualified against the published OmaCalendar `1.0.0-alpha` app.
+Clone that exact source, build it, install it for the current user, and enable
+the on-demand daemon socket before installing the widget:
+
+```bash
+git clone --branch v1.0.0-alpha --depth 1 \
+  https://github.com/brdweb/omacalendar.git
+cd omacalendar
+omarchy pkg add cmake ninja gcc qt6-base qt6-declarative \
+  qt6-networkauth libical libsecret pkgconf
+cmake -S . -B build -G Ninja \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DCMAKE_INSTALL_PREFIX="$HOME/.local"
+cmake --build build --parallel
+ctest --test-dir build --output-on-failure
+cmake --install build
+systemctl --user daemon-reload
+systemctl --user enable --now omacalendard.socket
+```
+
+Launch `omacalendar` from the application launcher to add calendars and manage
+provider settings. The full walkthrough, data locations, and removal guidance
+are in the app's
+[Getting started guide](https://github.com/brdweb/omacalendar/blob/main/docs/GETTING_STARTED.md).
+
+Google Calendar access is currently in Google's OAuth verification stage and
+is not yet approved for unrestricted public use. Until Google completes the
+review, authorization may be limited to configured test users and Google may
+show its unverified-app warning. This does not affect local calendars, CalDAV,
+ICS, or the widget's user-local IPC connection to `omacalendard`.
+
 ## Install a verified release archive
 
 After `v0.1.0-beta.1` is published, the immutable public-install path is the
