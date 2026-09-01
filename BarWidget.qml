@@ -2,7 +2,6 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
-import Quickshell.Io
 import qs.Commons
 import qs.Ui
 import "CalendarModel.js" as Model
@@ -74,18 +73,6 @@ BarWidget {
       root.injectPanel()
       Qt.callLater(root.injectPanel)
     }
-  }
-
-  IpcHandler {
-    target: "org.omacalendar.widget"
-    // Panel lifecycle is instance-local: the shell selects the focused
-    // monitor's widget. Only refresh is safe to fan out to every bar surface.
-    function open(): void { root.open() }
-    function close(): void { root.close() }
-    function show(): void { root.open() }
-    function hide(): void { root.close() }
-    function toggle(): void { root.togglePanel() }
-    function refresh(): void { root.broadcast("refresh") }
   }
 
   WidgetButton {

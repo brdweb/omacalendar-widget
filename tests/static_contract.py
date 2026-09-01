@@ -138,7 +138,13 @@ class StaticContractTest(unittest.TestCase):
             "panel.fittedContentHeight",
         ):
             self.assertIn(needle, panel)
-        self.assertIn('root.broadcast("refresh")', bar)
+        # Current Omarchy routes summon/hide/toggle through the focused
+        # monitor's BarWidget instance. A plugin-local IpcHandler would be
+        # instantiated once per monitor and collide on the same target.
+        self.assertNotIn("IpcHandler {", bar)
+        self.assertIn("function open()", bar)
+        self.assertIn("function close()", bar)
+        self.assertIn("function togglePanel()", bar)
         self.assertIn("root.vertical", bar)
         self.assertIn('root.privacy === "hidden"', bar)
         self.assertIn("Style.space", panel)
