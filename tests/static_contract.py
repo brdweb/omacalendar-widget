@@ -21,7 +21,7 @@ class StaticContractTest(unittest.TestCase):
     def test_manifest_identity_and_compatibility(self) -> None:
         manifest = json.loads(text("manifest.json"))
         self.assertEqual(manifest["id"], "org.omacalendar.widget")
-        self.assertEqual(manifest["version"], "0.1.0-alpha")
+        self.assertEqual(manifest["version"], "0.1.0-beta.1")
         self.assertEqual(manifest["entryPoints"]["barWidget"], "BarWidget.qml")
         self.assertEqual(manifest["compatibility"]["omacalendarProtocolMajor"], 2)
         self.assertEqual(manifest["compatibility"]["minimumOmaCalendarProtocolMinor"], 0)
@@ -30,6 +30,69 @@ class StaticContractTest(unittest.TestCase):
         self.assertEqual(release["widgetVersion"], manifest["version"])
         self.assertEqual(release["testedOmaCalendarVersion"], "1.0.0-alpha")
         self.assertEqual(release["omacalendarProtocolMajor"], 2)
+        self.assertEqual(release["minimumOmaCalendarProtocolMinor"], 0)
+        self.assertEqual(release["releaseChannel"], "beta")
+        self.assertEqual(release["trustedInstallBranch"], "main")
+        self.assertEqual(
+            release["trustedInstallTag"], f'v{release["widgetVersion"]}'
+        )
+
+    def test_public_install_sources_are_release_bound(self) -> None:
+        readme = text("README.md")
+        marketplace = text("docs/MARKETPLACE.md")
+        submission = text("docs/MARKETPLACE_SUBMISSION.md")
+        release_guide = text("docs/RELEASE.md")
+
+        self.assertIn("Install a verified release archive", readme)
+        self.assertIn("release_version=0.1.0-beta.1", readme)
+        self.assertIn('archive="omacalendar-widget-${release_version}-source.tar.gz"', readme)
+        self.assertIn("gh attestation verify", readme)
+        self.assertIn('--source-ref "refs/tags/v${release_version}"', readme)
+        self.assertIn("--signer-workflow brdweb/omacalendar-widget/.github/workflows/release.yml", readme)
+        self.assertIn("release-only `main`", readme)
+        self.assertIn("fetches and fast-forwards", readme)
+        self.assertIn("`origin HEAD`", readme)
+        self.assertIn("release-only `main`", marketplace)
+        self.assertIn("exact commit of signed tag `v0.1.0-beta.1`", submission)
+        self.assertIn("git ls-remote --symref origin HEAD", release_guide)
+        self.assertIn('refs/tags/${release_tag}^{}', release_guide)
+        self.assertIn("release-only install", text("SECURITY.md"))
+
+    def test_marketplace_submission_is_ready_but_preview_remains_real(self) -> None:
+        submission = text("docs/MARKETPLACE_SUBMISSION.md")
+        headings = (
+            "### Repository URL",
+            "### Category",
+            "### Tags",
+            "### Suggest a missing tag",
+            "### Maintainer notes",
+            "### Submission checklist",
+        )
+        positions = [submission.index(heading) for heading in headings]
+        self.assertEqual(positions, sorted(positions))
+        self.assertIn("https://github.com/brdweb/omacalendar-widget", submission)
+        self.assertIn("\nWidgets\n", submission)
+        self.assertIn("\nbar, quickshell\n", submission)
+        official_checklist = (
+            "The repository is public and contains installation and removal instructions.",
+            "I have documented the plugin license and any external dependencies.",
+            "I confirm that I own or have permission to submit this plugin and its preview assets.",
+            "The plugin does not overwrite user configuration without explicit consent.",
+            "I understand that approval is for listing and is not a security review.",
+        )
+        for statement in official_checklist:
+            self.assertIn(f"- [x] {statement}", submission)
+
+        marketplace = text("docs/MARKETPLACE.md")
+        self.assertIn("omacom/omarchy-plugin-marketplace", marketplace)
+        self.assertIn('--title "[Plugin]: OmaCalendar"', marketplace)
+        self.assertIn("--body-file docs/MARKETPLACE_SUBMISSION.md", marketplace)
+
+        release_verifier = text("scripts/release/verify-release.sh")
+        self.assertIn("release requires exactly one real root marketplace preview image", release_verifier)
+        self.assertIn("tools/preview/validate_preview.py", release_verifier)
+        self.assertIn("VALIDATOR.inspect_ocr(preview_path)", text("tests/preview_contract.py"))
+        self.assertIn("synthetic events", text("docs/BETA_ACCEPTANCE.md"))
 
     def test_widget_remains_a_local_presentation_client(self) -> None:
         sources = "\n".join(
@@ -257,7 +320,7 @@ class StaticContractTest(unittest.TestCase):
         workflow = text(".github/workflows/release.yml")
         for needle in (
             "needs: current-omarchy-gate",
-            'omacalendar/git/ref/tags/v${app_version}',
+            "scripts/release/verify-qualified-app.py",
             "./scripts/release/verify-release.sh",
             "./scripts/release/package-source.sh",
             "anchore/sbom-action@",
@@ -268,6 +331,20 @@ class StaticContractTest(unittest.TestCase):
         ):
             self.assertIn(needle, workflow)
         self.assertNotRegex(workflow, r"gh release create[^\n]*--latest")
+
+        qualified_app_gate = text("scripts/release/verify-qualified-app.py")
+        for needle in (
+            'APP_REPOSITORY = "brdweb/omacalendar"',
+            '/git/ref/tags/{tag}',
+            '/git/tags/{tag_sha}',
+            'verification.get("verified") is not True',
+            '/releases/tags/{tag}',
+            'release.get("draft") is not False',
+            'contents/{DOMAIN_HEADER}?ref={commit_sha}',
+            '"kIpcProtocolMajor"',
+            '"kIpcProtocolMinor"',
+        ):
+            self.assertIn(needle, qualified_app_gate)
 
         package_script = text("scripts/release/package-source.sh")
         self.assertIn("gzip -n -9", package_script)

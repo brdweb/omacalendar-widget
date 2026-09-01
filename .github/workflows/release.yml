@@ -19,9 +19,10 @@ jobs:
       - name: Install current Arch and Quickshell test runtime
         run: |
           pacman -Syu --noconfirm --needed \
-            git jq python quickshell qt6-declarative weston
+            git jq python quickshell qt6-declarative \
+            tesseract tesseract-data-eng weston
       - name: Check out tagged source
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
       - name: Fetch release-reference Omarchy
@@ -30,7 +31,7 @@ jobs:
           git init "$omarchy_root"
           git -C "$omarchy_root" remote add origin https://github.com/omacom/omarchy.git
           git -C "$omarchy_root" fetch --depth=1 origin \
-            13f18b2cb7286fb54f87daf571a031aa6af3d8f0
+            346e69e1cec6c4e8924531874af6ba010a1bc99e
           git -C "$omarchy_root" checkout --detach FETCH_HEAD
       - name: Run the complete widget integration suite
         run: |
@@ -47,9 +48,10 @@ jobs:
       - name: Install current Arch release dependencies
         run: |
           pacman -Syu --noconfirm --needed \
-            git github-cli jq python qt6-declarative
+            git github-cli jq python qt6-declarative \
+            tesseract tesseract-data-eng
       - name: Check out tagged source
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
 
@@ -73,15 +75,10 @@ jobs:
           fi
           ./scripts/release/verify-release.sh "${GITHUB_REF_NAME}"
 
-      - name: Require the qualified OmaCalendar app tag
+      - name: Verify the qualified published OmaCalendar app release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          app_version=$(jq -r .testedOmaCalendarVersion release.json)
-          test -n "${app_version}" && test "${app_version}" != null
-          gh api \
-            "repos/${GITHUB_REPOSITORY_OWNER}/omacalendar/git/ref/tags/v${app_version}" \
-            >/dev/null
+        run: python3 scripts/release/verify-qualified-app.py
 
       - name: Run portable contracts
         run: ./tests/run-portable.sh
@@ -98,7 +95,7 @@ jobs:
           echo "archive=${archive}" >>"${GITHUB_OUTPUT}"
 
       - name: Generate SPDX SBOM
-        uses: anchore/sbom-action@v0
+        uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
         with:
           path: stage
           format: spdx-json
@@ -117,20 +114,20 @@ jobs:
           sha256sum --check SHA256SUMS
 
       - name: Attest source provenance
-        uses: actions/attest@v4
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
           subject-path: |
             artifacts/${{ steps.package.outputs.archive }}
             artifacts/SHA256SUMS
 
       - name: Attest archive SBOM
-        uses: actions/attest@v4
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
           subject-path: artifacts/${{ steps.package.outputs.archive }}
           sbom-path: artifacts/omacalendar-widget-${{ steps.package.outputs.version }}.spdx.json
 
       - name: Upload candidate artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: omacalendar-widget-${{ steps.package.outputs.version }}-release-candidate
           path: artifacts/
@@ -144,13 +141,18 @@ jobs:
           existing_state=$(gh release view "${GITHUB_REF_NAME}" --json isDraft --jq .isDraft 2>/dev/null || echo missing)
           if [[ ${existing_state} == true ]]; then
             gh release upload "${GITHUB_REF_NAME}" artifacts/* --clobber
+            if [[ ${RELEASE_VERSION} == *-* ]]; then
+              gh release edit "${GITHUB_REF_NAME}" --prerelease
+            fi
           elif [[ ${existing_state} == false ]]; then
             echo "refusing to replace assets on an already published release" >&2
             exit 1
           else
+            release_flags=(--draft --generate-notes --verify-tag)
+            if [[ ${RELEASE_VERSION} == *-* ]]; then
+              release_flags+=(--prerelease)
+            fi
             gh release create "${GITHUB_REF_NAME}" artifacts/* \
-              --draft \
-              --generate-notes \
-              --title "OmaCalendar widget ${RELEASE_VERSION}" \
-              --verify-tag
+              "${release_flags[@]}" \
+              --title "OmaCalendar widget ${RELEASE_VERSION}"
           fi
