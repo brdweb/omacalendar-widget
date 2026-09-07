@@ -5,7 +5,10 @@ from __future__ import annotations
 
 import ast
 import json
+import os
 import re
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -17,7 +20,100 @@ def text(path: str) -> str:
     return (ROOT / path).read_text(encoding="utf-8")
 
 
+def qml_object_bodies(source: str, type_name: str) -> list[str]:
+    """Return complete bodies for line-leading QML object declarations."""
+    bodies: list[str] = []
+    declaration = re.compile(rf"(?m)^\s*{re.escape(type_name)}\s*\{{")
+    for match in declaration.finditer(source):
+        start = source.index("{", match.start())
+        depth = 0
+        quote = ""
+        escaped = False
+        line_comment = False
+        block_comment = False
+        index = start
+        while index < len(source):
+            char = source[index]
+            following = source[index + 1] if index + 1 < len(source) else ""
+            if line_comment:
+                if char == "\n":
+                    line_comment = False
+            elif block_comment:
+                if char == "*" and following == "/":
+                    block_comment = False
+                    index += 1
+            elif quote:
+                if escaped:
+                    escaped = False
+                elif char == "\\":
+                    escaped = True
+                elif char == quote:
+                    quote = ""
+            elif char == "/" and following == "/":
+                line_comment = True
+                index += 1
+            elif char == "/" and following == "*":
+                block_comment = True
+                index += 1
+            elif char in ('"', "'"):
+                quote = char
+            elif char == "{":
+                depth += 1
+            elif char == "}":
+                depth -= 1
+                if depth == 0:
+                    bodies.append(source[start + 1 : index])
+                    break
+            index += 1
+        else:
+            raise AssertionError(f"unterminated {type_name} object")
+    return bodies
+
+
+def fenced_bash_after(source: str, heading_or_phrase: str) -> str:
+    section = source.index(heading_or_phrase)
+    fence = source.index("```bash\n", section) + len("```bash\n")
+    return source[fence : source.index("\n```", fence)]
+
+
 class StaticContractTest(unittest.TestCase):
+    def test_qml_text_surfaces_render_provider_content_literally(self) -> None:
+        production_qml = sorted(ROOT.glob("*.qml")) + sorted(
+            (ROOT / "components").glob("*.qml")
+        )
+        checked = 0
+        for path in production_qml:
+            for body in qml_object_bodies(path.read_text(encoding="utf-8"), "Text"):
+                checked += 1
+                self.assertRegex(
+                    body,
+                    r"(?m)^\s*textFormat:\s*Text\.PlainText\s*$",
+                    f"{path.relative_to(ROOT)} has a Text object without literal rendering",
+                )
+        self.assertGreater(checked, 0)
+
+    def test_provider_text_host_control_bindings_are_explicit(self) -> None:
+        # These provider-derived bindings are intentionally rendered by Omarchy
+        # host controls. tests/omarchy_ui_contract.py verifies the actual host
+        # implementation used by the full native/current-Arch suites.
+        bindings = {
+            "BarWidget.qml": (
+                'text: root.vertical ? "" : root.horizontalText',
+                "tooltipText: root.upNext",
+            ),
+            "Panel.qml": (
+                "text: root.selectedCalendarName +",
+                'text: String(modelData.name || "Calendar")',
+            ),
+            "components/EventEditor.qml": (
+                'text: root.selectedCalendar ? "Calendar · " + String(root.selectedCalendar.name || "Calendar")',
+            ),
+        }
+        for path, expected in bindings.items():
+            source = text(path)
+            for binding in expected:
+                self.assertIn(binding, source)
+
     def test_manifest_identity_and_compatibility(self) -> None:
         manifest = json.loads(text("manifest.json"))
         self.assertEqual(manifest["id"], "org.omacalendar.widget")
@@ -28,7 +124,7 @@ class StaticContractTest(unittest.TestCase):
         self.assertEqual(manifest["compatibility"]["minimumOmarchy"], "4.0.0")
         release = json.loads(text("release.json"))
         self.assertEqual(release["widgetVersion"], manifest["version"])
-        self.assertEqual(release["testedOmaCalendarVersion"], "1.0.0-alpha")
+        self.assertEqual(release["testedOmaCalendarVersion"], "1.0.0-beta.1")
         self.assertEqual(release["omacalendarProtocolMajor"], 2)
         self.assertEqual(release["minimumOmaCalendarProtocolMinor"], 0)
         self.assertEqual(release["releaseChannel"], "beta")
@@ -57,6 +153,50 @@ class StaticContractTest(unittest.TestCase):
         self.assertIn("git ls-remote --symref origin HEAD", release_guide)
         self.assertIn('refs/tags/${release_tag}^{}', release_guide)
         self.assertIn("release-only install", text("SECURITY.md"))
+
+    def test_app_install_recipes_stop_before_privilege_after_failed_verification(self) -> None:
+        recipes = (
+            fenced_bash_after(text("README.md"), "## Install the required OmaCalendar app"),
+            fenced_bash_after(text("docs/MARKETPLACE_SUBMISSION.md"), "Install the qualified app's"),
+        )
+        for recipe in recipes:
+            self.assertEqual(recipe.splitlines()[0], "set -euo pipefail")
+            self.assertIn(
+                "--signer-workflow brdweb/omacalendar/.github/workflows/release.yml",
+                recipe,
+            )
+            self.assertLess(recipe.index("sha256sum --check"), recipe.index("sudo pacman"))
+            self.assertLess(recipe.index("gh attestation verify"), recipe.index("sudo pacman"))
+
+            for failed_command in ("sha256sum", "gh"):
+                with self.subTest(failed_command=failed_command), tempfile.TemporaryDirectory() as tmp:
+                    tmp_path = Path(tmp)
+                    bin_path = tmp_path / "bin"
+                    bin_path.mkdir()
+                    marker = tmp_path / "privileged-command-ran"
+                    scripts = {
+                        "curl": '#!/bin/sh\nfor arg; do :; done\ntouch "${arg##*/}"\n',
+                        "grep": "#!/bin/sh\nprintf 'fixture  package\\n'\n",
+                        "sha256sum": "#!/bin/sh\ncat >/dev/null\nexit "
+                        + ("1\n" if failed_command == "sha256sum" else "0\n"),
+                        "gh": "#!/bin/sh\nexit " + ("1\n" if failed_command == "gh" else "0\n"),
+                        "sudo": f'#!/bin/sh\ntouch "{marker}"\nexit 0\n',
+                        "systemctl": f'#!/bin/sh\ntouch "{marker}"\nexit 0\n',
+                    }
+                    for name, contents in scripts.items():
+                        executable = bin_path / name
+                        executable.write_text(contents, encoding="utf-8")
+                        executable.chmod(0o755)
+                    result = subprocess.run(
+                        ["bash", "-c", recipe],
+                        cwd=tmp_path,
+                        env={**os.environ, "PATH": f"{bin_path}:/usr/bin:/bin"},
+                        check=False,
+                        capture_output=True,
+                        text=True,
+                    )
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertFalse(marker.exists(), result.stdout + result.stderr)
 
     def test_marketplace_submission_is_ready_but_preview_remains_real(self) -> None:
         submission = text("docs/MARKETPLACE_SUBMISSION.md")

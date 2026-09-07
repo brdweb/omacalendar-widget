@@ -444,7 +444,7 @@ Item {
   }
 
   function retryOperation(id) {
-    _mutation("operations.retry", { operationId: String(id) }, "retry-operation")
+    _mutation("operations.retry", { operationId: Number(id) }, "retry-operation")
   }
 
   function syncNow() {

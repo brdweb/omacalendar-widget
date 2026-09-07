@@ -177,6 +177,7 @@ Item {
       width: parent.width
 
       Text {
+        textFormat: Text.PlainText
         width: parent.width - cancelButton.implicitWidth
         anchors.verticalCenter: parent.verticalCenter
         text: root.editing ? "Edit event" : "New event"
@@ -266,6 +267,7 @@ Item {
     }
 
     Text {
+      textFormat: Text.PlainText
       visible: root.editing && root.writableCalendars.some(function(calendar) {
         return String(calendar.id) !== root.sourceCalendarId && !root.canSelectCalendar(calendar)
       })
@@ -287,6 +289,7 @@ Item {
     }
 
     Text {
+      textFormat: Text.PlainText
       id: validationLabel
       width: parent.width
       visible: text !== ""

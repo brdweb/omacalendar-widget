@@ -194,6 +194,9 @@ Item {
           root.phase = 5
           client.activateCalendarSet("set-all")
         } else if (root.phase === 5 && action === "activate-calendar-set") {
+          root.phase = 6
+          client.retryOperation("42")
+        } else if (root.phase === 6 && action === "retry-operation") {
           root.pass()
         }
         return

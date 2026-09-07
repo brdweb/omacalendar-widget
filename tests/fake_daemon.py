@@ -88,6 +88,7 @@ METHODS = [
     "events.undo",
     "events.respond",
     "calendarSets.activate",
+    "operations.retry",
     "reminders.snooze",
     "reminders.dismiss",
 ]
@@ -232,6 +233,16 @@ class Fixture:
             ):
                 return self._invalid("calendar-set activation omitted mutation metadata")
             return Reply(result={"activeId": params.get("calendarSetId")})
+
+        if method == "operations.retry":
+            params = message.get("params", {})
+            if self.scenario == "mutation-contract" and (
+                not params.get("clientMutationId")
+                or type(params.get("operationId")) is not int
+                or params.get("operationId") != 42
+            ):
+                return self._invalid("operation retry requires a numeric operationId")
+            return Reply(result={"retried": True})
 
         if method == "reminders.snooze":
             params = message.get("params", {})

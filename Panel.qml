@@ -439,6 +439,7 @@ Panel {
               spacing: Style.space(2)
 
               Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 text: Qt.formatDate(root.selectedDate, "dddd, MMMM d")
                 color: root.contentForeground
@@ -449,6 +450,7 @@ Panel {
               }
 
               Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 visible: root.currentEvent !== null
                 text: root.currentEvent
@@ -463,6 +465,7 @@ Panel {
               }
 
               Text {
+                textFormat: Text.PlainText
                 width: parent.width
                 text: root.upNext
                   ? "UP NEXT · " + Model.eventTitle(root.upNext) + " · " + Model.upNextLabel(root.upNext, root.today)
@@ -516,6 +519,7 @@ Panel {
               anchors.verticalCenter: parent.verticalCenter
 
               Text {
+                textFormat: Text.PlainText
                 width: parent.width - undoButton.implicitWidth
                 anchors.verticalCenter: parent.verticalCenter
                 text: daemonClient.undoLabel || "Event deleted"

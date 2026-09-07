@@ -6,13 +6,7 @@ begin.
 
 ## [Unreleased]
 
-### Fixed
-
-- Bound public Git installs to a release-only default branch and documented the
-  attested signed-release archive as the immutable installation path because
-  current Omarchy plugin add/update commands cannot select a tag or commit.
-
-## [0.1.0-beta.1] - 2026-08-31
+## [0.1.0-beta.1] - 2026-09-06
 
 ### Added
 
@@ -23,15 +17,27 @@ begin.
 
 ### Changed
 
+- Bound public Git installs to a release-only default branch and documented the
+  attested signed-release archive as the immutable installation path because
+  current Omarchy plugin add/update commands cannot select a tag or commit.
+- Qualify the widget beta against OmaCalendar `1.0.0-beta.1` and install the app
+  from its checksummed, attested native Arch package.
 - Advanced the independent widget release metadata to `0.1.0-beta.1` and
-  recorded the published OmaCalendar `1.0.0-alpha` as its IPC 2 qualification target without
-  coupling the projects' versions or release dates.
+  recorded the published OmaCalendar `1.0.0-beta.1` as its IPC 2 qualification
+  target without coupling the projects' versions or release dates.
 - Updated installation, alpha-to-beta upgrade, removal, compatibility, release,
   and current marketplace documentation.
 - Added exact get, build, test, install, and socket-activation steps for the
   qualified desktop app, including its current Google OAuth verification status.
 - Made a real root marketplace preview a release gate; mockups and screenshots
   containing private calendar data are not accepted.
+
+### Fixed
+
+- Send operation retry IDs as JSON numbers so the widget matches the app's IPC 2
+  contract instead of silently issuing a string-valued request.
+- Render every daemon-supplied calendar and event string as literal text so
+  provider-controlled markup cannot alter the widget presentation.
 
 ## [0.1.0-alpha] - 2026-08-30
 

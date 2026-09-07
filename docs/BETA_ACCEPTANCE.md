@@ -8,19 +8,22 @@ issues and rerun affected checks after the fix.
 ## Candidate
 
 - Widget: `0.1.0-beta.1`
-- OmaCalendar app used for compatibility qualification: `1.0.0-alpha`
+- OmaCalendar app used for compatibility qualification: `1.0.0-beta.1`
 - IPC: major 2, minimum minor 0
 - Release-reference system: Omarchy 4.0.2-1, Quickshell 0.3.1
-- Candidate commit: _record the accepted 40-character SHA_
-- Acceptance date: In progress; pre-tag evidence updated 2026-09-01
+- Candidate commit: the immutable 40-character branch-tip SHA recorded by
+  GitHub CI and the pre-tag release evidence; the tracked candidate cannot
+  embed its own commit ID without changing that ID
+- Acceptance date: In progress; pre-tag evidence updated 2026-09-06
 
 ## Automated gates
 
-- [x] `omarchy plugin validate .` passes on the candidate checkout.
-- [x] `./tests/run.sh` passes on the candidate checkout.
-- [x] GitHub CI and secret scanning pass on the candidate runtime code.
-- [x] `release.json`, `manifest.json`, changelog, and compatibility metadata agree.
-- [x] App tag `v1.0.0-alpha` is annotated and GitHub-signature-verified, resolves
+- [ ] `omarchy plugin validate .` passes on the exact committed candidate checkout.
+- [ ] `./tests/run.sh` passes on the exact committed candidate checkout.
+- [ ] GitHub CI and complete-history secret scanning pass on that exact commit.
+- [ ] `release.json`, `manifest.json`, changelog, and compatibility metadata agree
+      on that exact commit.
+- [ ] App tag `v1.0.0-beta.1` is annotated and GitHub-signature-verified, resolves
       to a commit, has a published non-draft release, and its tagged source
       exposes the recorded IPC major and minimum minor.
 - [ ] Signed widget tag verification, deterministic archive, checksums, SBOM,
@@ -96,3 +99,26 @@ issues and rerun affected checks after the fix.
 These results do not close the unchecked real-compositor/hardware acceptance,
 signed-tag, public-artifact, exact-tag/default-branch, or marketplace-owner
 submission gates. Do not tag or submit while any of those rows remains open.
+
+## Beta-candidate work on 2026-09-06
+
+- The widget qualification target was advanced to the app's first beta so the
+  public install instructions use its checksummed, attested native package.
+- Operation retry now sends a JSON number, matching the app's IPC 2 contract;
+  the fake-daemon integration test proves the dynamic request shape.
+- Every widget-owned `Text` surface is pinned to `Text.PlainText`; the structural
+  gate checks each object independently, and the complete suite verifies the
+  exact Omarchy host controls used for provider-derived button and tooltip text.
+- Both app-install recipes now enable fail-closed shell handling before any
+  download or verification. An executable regression proves checksum and
+  provenance failures cannot reach the privileged package-install command.
+- The complete suite passed natively on Omarchy 4.0.2-1 / Quickshell 0.3.1 and
+  again under a clean current-Arch headless compositor using pinned Omarchy
+  commit `346e69e1cec6c4e8924531874af6ba010a1bc99e`.
+- Independent read-only review validated HTTPS-only meeting joins, numeric
+  retry, release automation, preview privacy, and release-only-branch
+  sequencing. Its release-instruction and regression-gate findings were fixed;
+  the exact committed candidate still requires clean-checkout and hosted gates.
+- App-tag, exact candidate, live compositor, signed widget tag, public artifact,
+  and marketplace-owner gates remain unchecked until their immutable evidence
+  exists.

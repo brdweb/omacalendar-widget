@@ -28,7 +28,7 @@ below.
 - Complete widget suite passes: `./tests/run.sh`
 - Real, privacy-safe root preview image named `preview.png`
 - Published widget beta and exact compatibility record:
-  widget `0.1.0-beta.1`, OmaCalendar `1.0.0-alpha`, IPC major 2
+  widget `0.1.0-beta.1`, OmaCalendar `1.0.0-beta.1`, IPC major 2
 - `release.json` names trusted install branch `main` and signed install tag
   `v0.1.0-beta.1`
 - GitHub's default branch is release-only `main`; its remote `HEAD`, branch tip,

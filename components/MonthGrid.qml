@@ -46,6 +46,7 @@ Item {
     }
 
     Text {
+      textFormat: Text.PlainText
       width: Math.max(0, parent.width - parent.children[0].implicitWidth - parent.children[2].implicitWidth)
       anchors.verticalCenter: parent.verticalCenter
       horizontalAlignment: Text.AlignHCenter
@@ -75,6 +76,7 @@ Item {
       model: root.weekdays
 
       Text {
+        textFormat: Text.PlainText
         required property int modelData
         width: root.cellWidth
         text: String(Qt.locale("en_US").dayName(modelData === 0 ? 7 : modelData, Locale.NarrowFormat)).toUpperCase()
@@ -118,6 +120,7 @@ Item {
           + (modelData.eventCount ? ", " + modelData.eventCount + " event" + (modelData.eventCount === 1 ? "" : "s") : "")
 
         Text {
+          textFormat: Text.PlainText
           anchors.horizontalCenter: parent.horizontalCenter
           anchors.verticalCenter: parent.verticalCenter
           anchors.verticalCenterOffset: dayCell.modelData.eventCount ? -Style.space(3) : 0

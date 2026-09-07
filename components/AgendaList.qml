@@ -54,6 +54,7 @@ Item {
   Component.onCompleted: positionAtAnchor()
 
   Text {
+    textFormat: Text.PlainText
     id: emptyLabel
     visible: root.events.length === 0
     anchors.centerIn: parent
@@ -112,6 +113,7 @@ Item {
         spacing: Style.space(1)
 
         Text {
+          textFormat: Text.PlainText
           width: parent.width
           text: Model.eventTitle(eventRow.modelData)
           color: root.foreground
@@ -122,6 +124,7 @@ Item {
         }
 
         Text {
+          textFormat: Text.PlainText
           width: parent.width
           text: {
             var label = root.showDate

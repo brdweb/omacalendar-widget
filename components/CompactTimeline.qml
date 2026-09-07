@@ -50,6 +50,7 @@ Item {
       model: root.dayCount
 
       Text {
+        textFormat: Text.PlainText
         required property int index
         width: root.dayWidth
         height: dayHeaders.height
@@ -88,6 +89,7 @@ Item {
         radius: Style.cornerRadius
 
         Text {
+          textFormat: Text.PlainText
           anchors.fill: parent
           anchors.margins: Style.space(4)
           text: parent.dayEvents.length > 0
@@ -140,6 +142,7 @@ Item {
         height: root.hourHeight
 
         Text {
+          textFormat: Text.PlainText
           width: root.gutterWidth - Style.space(5)
           text: Qt.formatTime(new Date(2000, 0, 1, hourRow.index, 0), "h ap")
           color: Qt.darker(root.foreground, 1.4)
@@ -191,6 +194,7 @@ Item {
         clip: true
 
         Text {
+          textFormat: Text.PlainText
           anchors.fill: parent
           anchors.margins: Style.space(4)
           text: Model.eventTitle(parent.modelData.event) + "\n"

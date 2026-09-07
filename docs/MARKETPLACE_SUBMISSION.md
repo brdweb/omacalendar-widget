@@ -17,30 +17,33 @@ calendar
 ### Maintainer notes
 
 Requires a separately installed OmaCalendar daemon exposing IPC 2.0 or newer.
-Widget 0.1.0-beta.1 is qualified with OmaCalendar 1.0.0-alpha, but the projects'
+Widget 0.1.0-beta.1 is qualified with OmaCalendar 1.0.0-beta.1, but the projects'
 versions and release schedules are independent. The desktop application does
 not need to remain open; systemd user socket activation starts the daemon on
-demand. Install the qualified app source with:
+demand. Install the qualified app's checksummed and attested native package with:
 
 ```bash
-git clone --branch v1.0.0-alpha --depth 1 https://github.com/brdweb/omacalendar.git
-cd omacalendar
-omarchy pkg add cmake ninja gcc qt6-base qt6-declarative qt6-networkauth libical libsecret pkgconf
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX="$HOME/.local"
-cmake --build build --parallel
-ctest --test-dir build --output-on-failure
-cmake --install build
+set -euo pipefail
+app_version=1.0.0-beta.1
+package=omacalendar-1.0.0beta1-1-x86_64.pkg.tar.zst
+release_url="https://github.com/brdweb/omacalendar/releases/download/v${app_version}"
+curl -fLO "${release_url}/${package}"
+curl -fLO "${release_url}/SHA256SUMS"
+grep " ${package}$" SHA256SUMS | sha256sum --check
+gh attestation verify "${package}" --repo brdweb/omacalendar \
+  --source-ref "refs/tags/v${app_version}" \
+  --signer-workflow brdweb/omacalendar/.github/workflows/release.yml
+sudo pacman -U --needed "${package}"
 systemctl --user daemon-reload
 systemctl --user enable --now omacalendard.socket
 ```
 
 The app's complete installation and first-run guide is at
 https://github.com/brdweb/omacalendar/blob/main/docs/GETTING_STARTED.md.
-Google Calendar access is currently in Google's OAuth verification stage and
-is not yet approved for unrestricted public use; authorization may remain
-limited to configured test users and Google may show its unverified-app
-warning. The widget itself accesses only the user-local OmaCalendar socket and
-does not contact Google or any calendar provider.
+Google has approved the app's branding and Calendar data-access verification.
+The app's release acceptance record remains authoritative for external-account
+and provider testing. The widget itself accesses only the user-local
+OmaCalendar socket and does not contact Google or any calendar provider.
 
 Current Omarchy add/update commands follow the repository's remote default
 HEAD. The release-only `main` branch stays at the exact commit of signed tag `v0.1.0-beta.1`;

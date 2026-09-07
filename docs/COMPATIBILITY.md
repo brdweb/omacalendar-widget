@@ -8,7 +8,7 @@ daemon's advertised method list.
 | Widget version | OmaCalendar app version | IPC major | Status |
 |---|---|---:|---|
 | `0.1.0-alpha` | `1.0.0-alpha` | 2 | Alpha compatibility record; owner acceptance pending |
-| `0.1.0-beta.1` | `1.0.0-alpha` | 2 | Beta widget qualification against the published IPC 2 runtime; acceptance pending |
+| `0.1.0-beta.1` | `1.0.0-beta.1` | 2 | Beta widget qualification against the published IPC 2 runtime; acceptance pending |
 
 The current manifest requires Omarchy 4.0.0 or newer, Quickshell 0.3.1 or newer,
 and OmaCalendar IPC 2.0 or newer. The beta metadata and automated suite were

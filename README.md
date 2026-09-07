@@ -11,7 +11,7 @@ conflict resolution, and durable writes remain owned by `omacalendard`.
 This repository is intentionally separate from the desktop application. The
 widget has its own version and release cadence. Widget `0.1.0-beta.1` is the
 public-testing candidate qualified against the published OmaCalendar
-`1.0.0-alpha` runtime over IPC 2. That app version is compatibility evidence only: app
+`1.0.0-beta.1` runtime over IPC 2. That app version is compatibility evidence only: app
 and widget versions, tags, and publication dates do not need to match. This
 widget beta is not a stable or production-supported release.
 
@@ -27,22 +27,22 @@ daemon through socket activation and reads its local cache.
 
 ## Install the required OmaCalendar app
 
-The widget is qualified against the published OmaCalendar `1.0.0-alpha` app.
-Clone that exact source, build it, install it for the current user, and enable
+The widget is qualified against the published OmaCalendar `1.0.0-beta.1` app.
+Download its checksummed, attested native Arch package, install it, and enable
 the on-demand daemon socket before installing the widget:
 
 ```bash
-git clone --branch v1.0.0-alpha --depth 1 \
-  https://github.com/brdweb/omacalendar.git
-cd omacalendar
-omarchy pkg add cmake ninja gcc qt6-base qt6-declarative \
-  qt6-networkauth libical libsecret pkgconf
-cmake -S . -B build -G Ninja \
-  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-  -DCMAKE_INSTALL_PREFIX="$HOME/.local"
-cmake --build build --parallel
-ctest --test-dir build --output-on-failure
-cmake --install build
+set -euo pipefail
+app_version=1.0.0-beta.1
+package="omacalendar-1.0.0beta1-1-x86_64.pkg.tar.zst"
+release_url="https://github.com/brdweb/omacalendar/releases/download/v${app_version}"
+curl -fLO "${release_url}/${package}"
+curl -fLO "${release_url}/SHA256SUMS"
+grep " ${package}$" SHA256SUMS | sha256sum --check
+gh attestation verify "${package}" --repo brdweb/omacalendar \
+  --source-ref "refs/tags/v${app_version}" \
+  --signer-workflow brdweb/omacalendar/.github/workflows/release.yml
+sudo pacman -U --needed "${package}"
 systemctl --user daemon-reload
 systemctl --user enable --now omacalendard.socket
 ```
@@ -52,11 +52,10 @@ provider settings. The full walkthrough, data locations, and removal guidance
 are in the app's
 [Getting started guide](https://github.com/brdweb/omacalendar/blob/main/docs/GETTING_STARTED.md).
 
-Google Calendar access is currently in Google's OAuth verification stage and
-is not yet approved for unrestricted public use. Until Google completes the
-review, authorization may be limited to configured test users and Google may
-show its unverified-app warning. This does not affect local calendars, CalDAV,
-ICS, or the widget's user-local IPC connection to `omacalendard`.
+Google has approved the app's branding and Calendar data-access verification.
+The app acceptance record remains authoritative for the exact beta's external-
+account and provider checks. This does not change the widget's boundary: it
+uses only the user-local IPC connection to `omacalendard`.
 
 ## Install a verified release archive
 
@@ -378,7 +377,7 @@ creates a **draft** candidate containing a deterministic source archive,
 never publishes a release automatically.
 
 The current widget candidate is `0.1.0-beta.1`, qualified against OmaCalendar
-`1.0.0-alpha`; the recorded target does not synchronize the
+`1.0.0-beta.1`; the recorded target does not synchronize the
 two release paths. Publication remains blocked until the candidate acceptance
 record is complete. Marketplace publication steps and the ready-to-submit issue
 body are in [docs/MARKETPLACE.md](docs/MARKETPLACE.md).
