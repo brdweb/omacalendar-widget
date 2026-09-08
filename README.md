@@ -1,5 +1,12 @@
 # OmaCalendar Omarchy widget
 
+**Requires the full [OmaCalendar app](https://github.com/brdweb/omacalendar),
+installed separately.** Get the app from the
+[OmaCalendar downloads page](https://github.com/brdweb/omacalendar/releases/tag/v1.0.0-beta.1)
+and follow [Install the required OmaCalendar app](#install-the-required-omacalendar-app)
+below before installing this widget. The widget does not include the app or its
+background daemon.
+
 `org.omacalendar.widget` is the thin Omarchy Shell companion for OmaCalendar. It
 shows a configurable clock and Up Next summary in the bar, then opens
 keyboard-friendly Month, Day, Week, and Agenda views with search and inline
