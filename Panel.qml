@@ -348,7 +348,7 @@ Panel {
     bar: root.bar
     open: root.opened
     centerOnBar: true
-    focusTarget: keyCatcher
+      focusTarget: keyCatcher
     contentWidth: panel.fittedContentWidth(Style.space(760))
     contentHeight: panel.fittedContentHeight(
       Math.max(Style.space(420),
@@ -361,7 +361,7 @@ Panel {
       blocked: searchField.activeFocus || root.editorVisible
       onMoveRequested: function(dx, dy) { root.moveCursor(dx, dy) }
       onActivateRequested: {
-        if (root.selectedEvent) root.openEvent(root.selectedEvent)
+        if (root.selectedEvent) root.beginEdit(root.selectedEvent)
       }
       onCloseRequested: {
         if (root.calendarSelectorOpen) root.calendarSelectorOpen = false
@@ -801,8 +801,7 @@ Panel {
                   fontFamily: root.contentFontFamily
                   onEventClicked: function(index, event) {
                     root.selectedEventIndex = index
-                    if (event && event.readOnly) root.openEvent(event)
-                    else root.beginEdit(event)
+                    root.beginEdit(event)
                   }
                   onJoinClicked: function(event) { root.joinEvent(event) }
                 }
@@ -822,8 +821,7 @@ Panel {
             foreground: root.contentForeground
             fontFamily: root.contentFontFamily
             onEventClicked: function(event) {
-              if (event && event.readOnly) root.openEvent(event)
-              else root.beginEdit(event)
+              root.beginEdit(event)
             }
           }
 
@@ -855,8 +853,7 @@ Panel {
               fontFamily: root.contentFontFamily
               onEventClicked: function(index, event) {
                 root.selectedEventIndex = index
-                if (event && event.readOnly) root.openEvent(event)
-                else root.beginEdit(event)
+                root.beginEdit(event)
               }
               onJoinClicked: function(event) { root.joinEvent(event) }
             }

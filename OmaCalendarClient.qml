@@ -475,7 +475,7 @@ Item {
   function openDeepLink(path) {
     var suffix = String(path || "")
     if (suffix.charAt(0) === "/") suffix = suffix.slice(1)
-    Quickshell.execDetached(["uwsm-app", "--", "xdg-open", "omacalendar://" + suffix])
+    Quickshell.execDetached(["uwsm-app", "--", "omacalendar", "omacalendar://" + suffix])
   }
 
   Socket {

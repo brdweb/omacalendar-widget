@@ -93,7 +93,8 @@ BarWidget {
     Accessible.name: tooltipText
 
     onPressed: function(button) {
-      if (button === Qt.RightButton) Quickshell.execDetached(["xdg-open", "omacalendar://"])
+      if (button === Qt.RightButton)
+        Quickshell.execDetached(["uwsm-app", "--", "omacalendar", "omacalendar://"])
       else if (button === Qt.MiddleButton) root.refresh()
       else root.togglePanel()
     }

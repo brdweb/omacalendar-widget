@@ -51,6 +51,7 @@ qml_files=(
   "$plugin_dir/tests/tst_keyboard.qml"
   "$plugin_dir/tests/agenda_harness.qml"
   "$plugin_dir/tests/default_calendar_harness.qml"
+  "$plugin_dir/tests/event_details_harness.qml"
   "$plugin_dir/tools/preview/preview_harness.qml"
 )
 
@@ -135,6 +136,18 @@ if [[ $default_calendar_status -ne 0 ]] || ! grep -q "DEFAULT_CALENDAR_TEST_PASS
   exit 1
 fi
 echo "Default calendar smoke passed"
+
+set +e
+event_details_output=$(timeout 5s env \
+  OMACALENDAR_WIDGET_ENTRY="file://$plugin_dir/tests/event_details_harness.qml" \
+  quickshell --no-color --path "$test_root/shell.qml" 2>&1)
+event_details_status=$?
+set -e
+if [[ $event_details_status -ne 0 ]] || ! grep -q "EVENT_DETAILS_TEST_PASS" <<<"$event_details_output"; then
+  printf '%s\n' "$event_details_output" >&2
+  exit 1
+fi
+echo "Read-only event details smoke passed"
 
 for scale in 1 1.25 2; do
   set +e

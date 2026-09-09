@@ -22,11 +22,21 @@ Item {
   signal openInAppRequested()
 
   readonly property bool editing: event !== null
+  readonly property bool readOnly: event !== null && event.readOnly === true
   readonly property var writableCalendars: Model.writableCalendars(calendars)
-  readonly property var selectedCalendar: writableCalendars.length
-    ? writableCalendars[Math.max(0, Math.min(calendarIndex, writableCalendars.length - 1))] : null
+  readonly property var sourceCalendar: calendarById(sourceCalendarId)
+  readonly property var selectedCalendar: readOnly ? sourceCalendar
+    : (writableCalendars.length
+      ? writableCalendars[Math.max(0, Math.min(calendarIndex, writableCalendars.length - 1))] : null)
   readonly property string selectedCalendarId: String(selectedCalendar && selectedCalendar.id || "")
   readonly property string sourceCalendarId: String(event && event.calendarId || "")
+
+  function calendarById(calendarId) {
+    for (var index = 0; index < calendars.length; index++) {
+      if (String(calendars[index].id) === String(calendarId)) return calendars[index]
+    }
+    return null
+  }
 
   function calendarAccountId(calendarId) {
     for (var index = 0; index < writableCalendars.length; index++) {
@@ -132,6 +142,7 @@ Item {
   }
 
   function submit() {
+    if (readOnly) return
     var start = parseLocal(startField.text)
     var end = parseLocal(endField.text)
     if (!titleField.text.trim()) {
@@ -180,7 +191,7 @@ Item {
         textFormat: Text.PlainText
         width: parent.width - cancelButton.implicitWidth
         anchors.verticalCenter: parent.verticalCenter
-        text: root.editing ? "Edit event" : "New event"
+        text: root.readOnly ? "Event details" : root.editing ? "Edit event" : "New event"
         color: root.foreground
         font.family: Style.font.family
         font.pixelSize: Style.font.title
@@ -202,6 +213,7 @@ Item {
       placeholderText: "Title"
       foreground: root.foreground
       Accessible.name: "Event title"
+      readOnly: root.readOnly
       Keys.onEscapePressed: root.cancelRequested()
     }
 
@@ -211,6 +223,7 @@ Item {
       placeholderText: "Location or meeting link"
       foreground: root.foreground
       Accessible.name: "Event location"
+      readOnly: root.readOnly
       Keys.onEscapePressed: root.cancelRequested()
     }
 
@@ -220,6 +233,7 @@ Item {
       placeholderText: "Notes"
       foreground: root.foreground
       Accessible.name: "Event notes"
+      readOnly: root.readOnly
       Keys.onEscapePressed: root.cancelRequested()
     }
 
@@ -232,6 +246,7 @@ Item {
         selected: root.allDay
         foreground: root.foreground
         focusable: true
+        enabled: !root.readOnly
         onClicked: {
           root.toggleAllDay()
         }
@@ -243,6 +258,7 @@ Item {
         placeholderText: root.allDay ? "YYYY-MM-DD" : "YYYY-MM-DD HH:mm"
         foreground: root.foreground
         Accessible.name: "Event start"
+        readOnly: root.readOnly
         Keys.onEscapePressed: root.cancelRequested()
       }
 
@@ -252,6 +268,7 @@ Item {
         placeholderText: root.allDay ? "YYYY-MM-DD" : "YYYY-MM-DD HH:mm"
         foreground: root.foreground
         Accessible.name: "Event end"
+        readOnly: root.readOnly
         Keys.onEscapePressed: root.cancelRequested()
       }
     }
@@ -262,13 +279,13 @@ Item {
       leftAlign: true
       foreground: root.foreground
       focusable: true
-      enabled: root.writableCalendars.length > 0
+      enabled: !root.readOnly && root.writableCalendars.length > 0
       onClicked: root.cycleCalendar()
     }
 
     Text {
       textFormat: Text.PlainText
-      visible: root.editing && root.writableCalendars.some(function(calendar) {
+      visible: !root.readOnly && root.editing && root.writableCalendars.some(function(calendar) {
         return String(calendar.id) !== root.sourceCalendarId && !root.canSelectCalendar(calendar)
       })
       width: parent.width
@@ -280,12 +297,24 @@ Item {
     }
 
     Button {
+      visible: !root.readOnly
       width: parent.width
       text: "Guest updates · " + (root.guestNotificationPolicy === "none" ? "Do not send" : root.guestNotificationPolicy === "all" ? "Send to all" : "External guests only")
       leftAlign: true
       foreground: root.foreground
       focusable: true
       onClicked: root.cycleGuestPolicy()
+    }
+
+    Text {
+      textFormat: Text.PlainText
+      visible: root.readOnly
+      width: parent.width
+      text: "This event is read only."
+      color: Qt.darker(root.foreground, 1.4)
+      font.family: Style.font.family
+      font.pixelSize: Style.font.bodySmall
+      wrapMode: Text.WordWrap
     }
 
     Text {
@@ -304,7 +333,8 @@ Item {
       spacing: Style.space(8)
 
       Button {
-        width: (parent.width - parent.spacing) / 2
+        visible: !root.readOnly
+        width: visible ? (parent.width - parent.spacing) / 2 : 0
         text: root.editing ? "Save" : "Create"
         foreground: root.foreground
         selected: true
@@ -314,8 +344,8 @@ Item {
       }
 
       Button {
-        width: (parent.width - parent.spacing) / 2
-        text: "More options in app"
+        width: root.readOnly ? parent.width : (parent.width - parent.spacing) / 2
+        text: root.readOnly ? "Open in app" : "More options in app"
         foreground: root.foreground
         focusable: true
         onClicked: root.openInAppRequested()
