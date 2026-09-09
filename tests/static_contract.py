@@ -117,17 +117,17 @@ class StaticContractTest(unittest.TestCase):
     def test_manifest_identity_and_compatibility(self) -> None:
         manifest = json.loads(text("manifest.json"))
         self.assertEqual(manifest["id"], "org.omacalendar.widget")
-        self.assertEqual(manifest["version"], "0.1.0-rc.4")
+        self.assertEqual(manifest["version"], "0.1.0")
         self.assertEqual(manifest["entryPoints"]["barWidget"], "BarWidget.qml")
         self.assertEqual(manifest["compatibility"]["omacalendarProtocolMajor"], 2)
         self.assertEqual(manifest["compatibility"]["minimumOmaCalendarProtocolMinor"], 0)
         self.assertEqual(manifest["compatibility"]["minimumOmarchy"], "4.0.0")
         release = json.loads(text("release.json"))
         self.assertEqual(release["widgetVersion"], manifest["version"])
-        self.assertEqual(release["testedOmaCalendarVersion"], "1.0.0-rc.4")
+        self.assertEqual(release["testedOmaCalendarVersion"], "1.0.0")
         self.assertEqual(release["omacalendarProtocolMajor"], 2)
         self.assertEqual(release["minimumOmaCalendarProtocolMinor"], 0)
-        self.assertEqual(release["releaseChannel"], "rc")
+        self.assertEqual(release["releaseChannel"], "stable")
         self.assertEqual(release["trustedInstallBranch"], "main")
         self.assertEqual(
             release["trustedInstallTag"], f'v{release["widgetVersion"]}'
@@ -150,7 +150,7 @@ class StaticContractTest(unittest.TestCase):
         release_guide = text("docs/RELEASE.md")
 
         self.assertIn("Install a verified release archive", readme)
-        self.assertIn("release_version=0.1.0-beta.1", readme)
+        self.assertIn("release_version=0.1.0", readme)
         self.assertIn('archive="omacalendar-widget-${release_version}-source.tar.gz"', readme)
         self.assertIn("gh attestation verify", readme)
         self.assertIn('--source-ref "refs/tags/v${release_version}"', readme)
@@ -159,7 +159,7 @@ class StaticContractTest(unittest.TestCase):
         self.assertIn("fetches and fast-forwards", readme)
         self.assertIn("`origin HEAD`", readme)
         self.assertIn("release-only `main`", marketplace)
-        self.assertIn("exact commit of signed tag `v0.1.0-beta.1`", submission)
+        self.assertIn("exact commit of signed tag `v0.1.0`", submission)
         self.assertIn("git ls-remote --symref origin HEAD", release_guide)
         self.assertIn('refs/tags/${release_tag}^{}', release_guide)
         self.assertIn("release-only install", text("SECURITY.md"))
@@ -269,7 +269,10 @@ class StaticContractTest(unittest.TestCase):
 
         launch_lines = [line.strip() for line in sources.splitlines() if "execDetached" in line]
         self.assertTrue(launch_lines)
-        self.assertTrue(all('"xdg-open"' in line for line in launch_lines))
+        self.assertTrue(all('"xdg-open"' in line or '"omacalendar"' in line
+                            for line in launch_lines))
+        self.assertTrue(all('"uwsm-app"' in line
+                            for line in launch_lines if '"omacalendar"' in line))
 
     def test_host_primitives_cover_edges_monitors_scale_and_theme_reload(self) -> None:
         bar = text("BarWidget.qml")
@@ -350,7 +353,7 @@ class StaticContractTest(unittest.TestCase):
         handoff = panel[panel.index("function openDesktop(path)") : panel.index("function respond(")]
         self.assertLess(handoff.index("root.close()"), handoff.index("daemonClient.openDeepLink(path)"))
         self.assertIn('root.openDesktop("settings/accounts")', panel)
-        self.assertIn('["uwsm-app", "--", "xdg-open", "omacalendar://" + suffix]', client)
+        self.assertIn('["uwsm-app", "--", "omacalendar", "omacalendar://" + suffix]', client)
 
     def test_revision_recovery_protocol_guard_and_offline_cache_are_explicit(self) -> None:
         client = text("OmaCalendarClient.qml")
@@ -424,7 +427,10 @@ class StaticContractTest(unittest.TestCase):
         bar = text("BarWidget.qml")
         self.assertIn("readonly property var writableCalendars", editor)
         self.assertIn("Model.writableCalendars(calendars)", editor)
-        self.assertIn("readonly property var selectedCalendar: writableCalendars.length", editor)
+        self.assertIn("readonly property var selectedCalendar: readOnly ? sourceCalendar", editor)
+        self.assertIn("readonly property bool readOnly:", editor)
+        self.assertIn("if (readOnly) return", editor)
+        self.assertNotIn("if (event && event.readOnly) root.openEvent(event)", panel)
         self.assertIn('property string defaultCalendarId: ""', editor)
         self.assertIn('event && event.calendarId || defaultCalendarId', editor)
         self.assertIn('root.snapshot.defaultCalendarId', panel)

@@ -1,20 +1,50 @@
 {
   "stableVersion": "0.1.0",
-  "candidateVersion": "0.1.0-rc.4",
-  "candidateOmaCalendarVersion": "1.0.0-rc.4",
-  "evidenceCommit": null,
-  "acceptedBy": null,
-  "acceptedAt": null,
+  "candidateVersion": "0.1.0",
+  "candidateOmaCalendarVersion": "1.0.0",
+  "evidenceCommit": "89bb4f82dfb2131a31f216be1f762be5d6450b96",
+  "acceptedBy": "brdweb (release maintainer)",
+  "acceptedAt": "2026-09-09T22:55:26.795437+00:00",
   "gates": {
-    "automated": {"status": "pending", "evidence": ""},
-    "artifacts": {"status": "pending", "evidence": ""},
-    "install_upgrade_remove": {"status": "pending", "evidence": ""},
-    "transactional_restore": {"status": "pending", "evidence": ""},
-    "views_edges": {"status": "pending", "evidence": ""},
-    "keyboard": {"status": "pending", "evidence": ""},
-    "real_mutations": {"status": "pending", "evidence": ""},
-    "resilience": {"status": "pending", "evidence": ""},
-    "desktop_handoff": {"status": "pending", "evidence": ""},
-    "mixed_scale_theme": {"status": "pending", "evidence": ""}
+    "automated": {
+      "status": "passed",
+      "evidence": "Complete tests/run.sh passed on current Omarchy 2026-09-09; final CI repeats all contracts."
+    },
+    "artifacts": {
+      "status": "passed",
+      "evidence": "RC4 signed archive and prior package checks passed; stable deterministic archive, checksums and attestations are reverified before publication."
+    },
+    "install_upgrade_remove": {
+      "status": "passed",
+      "evidence": "Automated isolated lifecycle plus installed desktop upgrade and retained rollback snapshots verified during owner testing."
+    },
+    "transactional_restore": {
+      "status": "passed",
+      "evidence": "App widget_activation_test exercises isolated installation, failure rollback and restoration; full app suite passed."
+    },
+    "views_edges": {
+      "status": "passed",
+      "evidence": "Headless Omarchy layout suite and owner desktop calendar testing; owner approved stable scope 2026-09-09."
+    },
+    "keyboard": {
+      "status": "passed",
+      "evidence": "Qt keyboard navigation/activation/blocking tests passed; owner accepted desktop workflow."
+    },
+    "real_mutations": {
+      "status": "passed",
+      "evidence": "Owner connected calendars and exercised application workflows, reported defects fixed; mutation IPC contracts passed. Approval does not certify every provider scenario."
+    },
+    "resilience": {
+      "status": "passed",
+      "evidence": "IPC offline, restart, revision gap and incompatible protocol scenarios passed; live daemon/socket verified after upgrades."
+    },
+    "desktop_handoff": {
+      "status": "passed",
+      "evidence": "Direct uwsm-app native launch succeeded after stale MIME handler repair; source regression prevents browser dispatch for app links."
+    },
+    "mixed_scale_theme": {
+      "status": "passed",
+      "evidence": "Layout checks passed at 100%, 125% and 200%; owner approved release. Physical mixed-monitor/theme combinations are not exhaustively certified."
+    }
   }
 }

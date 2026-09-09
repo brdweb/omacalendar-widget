@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "org.omacalendar.widget",
   "name": "OmaCalendar",
-  "version": "0.1.0-rc.4",
+  "version": "0.1.0",
   "author": "OmaCalendar contributors",
   "description": "Calendar, agenda, and Up Next controls backed by the local OmaCalendar daemon",
   "license": "MIT",
@@ -21,7 +21,7 @@
     "allowMultiple": false,
     "defaults": {
       "format": "ddd HH:mm",
-      "verticalFormat": "HH\n—\nmm",
+      "verticalFormat": "HH\n\u2014\nmm",
       "showUpNext": true,
       "showCountdown": true,
       "barPrivacy": "full",
@@ -38,7 +38,7 @@
         "key": "verticalFormat",
         "type": "string",
         "label": "Vertical date and time format",
-        "defaultValue": "HH\n—\nmm"
+        "defaultValue": "HH\n\u2014\nmm"
       },
       {
         "key": "showUpNext",

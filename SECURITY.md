@@ -1,8 +1,7 @@
 # Security policy
 
-OmaCalendar widget `0.1.0-rc.4` is a draft release candidate for owner testing.
-The published `0.1.0-beta.1` remains an unsupported public-testing prerelease.
-It is not suitable for production or as the only way to access calendar data.
+The latest 0.1.x release receives security fixes. Upgrade to the latest patch
+release before reporting a vulnerability.
 
 Report suspected vulnerabilities privately with GitHub's **Report a
 vulnerability** form for this repository. Do not open a public issue containing

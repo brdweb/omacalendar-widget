@@ -4,6 +4,13 @@ All notable changes to the OmaCalendar widget are recorded here. The project
 follows Keep a Changelog and will use Semantic Versioning once public releases
 begin.
 
+## [0.1.0] - 2026-09-09
+
+- First stable companion release for OmaCalendar 1.0.0.
+- Read-only event details open within the widget.
+- Direct native application activation for app links and bar actions.
+- Compatible with the current Omarchy bar API.
+
 ## [Unreleased]
 
 ## [0.1.0-rc.4] - 2026-09-09

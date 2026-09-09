@@ -26,7 +26,7 @@ class AcceptanceContractTest(unittest.TestCase):
         self.record = json.loads((ROOT / "docs/stable-acceptance.json").read_text())
         # Actual owner evidence will be filled later; fixtures remain pending
         # independently so those real results do not change the test cases.
-        self.record.update({"acceptedBy": None, "acceptedAt": None, "evidenceCommit": None})
+        self.record.update({"candidateVersion": "0.1.0-rc.4", "acceptedBy": None, "acceptedAt": None, "evidenceCommit": None})
         for gate in self.record["gates"].values():
             gate.update({"status": "pending", "evidence": ""})
 
