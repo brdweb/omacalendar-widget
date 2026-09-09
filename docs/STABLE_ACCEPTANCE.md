@@ -61,7 +61,7 @@ tag_object=$(gh api repos/brdweb/omacalendar-widget/git/ref/tags/v0.1.0-rc.1 \
   --jq '.object.sha')
 gh api "repos/brdweb/omacalendar-widget/git/tags/${tag_object}" \
   --jq '{tag: .tag, commit: .object.sha, verified: .verification.verified}'
-omacalendar --version
+omacalendarctl system.info '{}'
 quickshell --version
 omarchy version
 systemctl --user is-enabled omacalendard.socket
