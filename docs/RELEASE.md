@@ -8,24 +8,23 @@ projects use matching versions or publish simultaneously.
 
 ## Current RC preparation
 
-Widget `0.1.0-rc.3` and app `1.0.0-rc.3` are owner-test candidates. The user
-requested preparation now and manual testing on 2026-09-09. Keep both releases
+Widget `0.1.0-rc.4` and app `1.0.0-rc.4` are owner-test candidates. The user
+authorized completing qualification and release on 2026-09-09; technical gates still apply. Keep both releases
 as drafts and keep widget RC metadata on its candidate branch until accepted.
 [`STABLE_ACCEPTANCE.md`](STABLE_ACCEPTANCE.md) is the current test/download/
 rollback procedure; [`stable-acceptance.json`](stable-acceptance.json) holds the
 pending evidence. The historical beta checklist is not stable approval.
 
-RC3 qualifies against app RC3 after RC2 artifact verification found 61 locale
-files listed in the app's Flatpak SPDX but absent from the bundle, plus a
-GitHub-normalized Debian filename. The widget itself has no runtime change.
-Preserve the RC2 signed tag, draft, and source inventory; rebuild and verify
-the new RC3 pair without transferring RC2 acceptance results.
+RC4 fixes the real Omarchy 4.0.3 read-only bar API failure discovered during
+running-shell acceptance. The application separately fixes calendar correctness,
+startup restoration and widget activation readiness. Rebuild and verify the
+new pair while preserving prior signed tags, drafts and source inventories.
 
 Widget RC1 was superseded before release artifacts were produced. Its SSH
 signature verified locally, but GitHub reported `unverified_email` for the
 tagger identity, so the release gate correctly stopped. Preserve the signed
 `v0.1.0-rc.1` tag unchanged; do not delete or move it. RC2 repaired the tagger
-identity; retain the same verified owner identity explicitly when tagging RC3.
+identity; retain the same verified owner identity explicitly when tagging RC4.
 The [RC1 workflow](https://github.com/brdweb/omacalendar-widget/actions/runs/34303331925)
 stopped at the signed-tag gate without creating a draft or release assets.
 
@@ -52,16 +51,16 @@ git config --local user.name 'Jason Mitchell'
 git config --local user.email '58915+brdweb@users.noreply.github.com'
 git -c user.name='Jason Mitchell' \
   -c user.email='58915+brdweb@users.noreply.github.com' \
-  tag -s v0.1.0-rc.3 -m 'OmaCalendar widget 0.1.0-rc.3'
-./scripts/release/verify-release.sh v0.1.0-rc.3
-git push origin v0.1.0-rc.3
+  tag -s v0.1.0-rc.4 -m 'OmaCalendar widget 0.1.0-rc.4'
+./scripts/release/verify-release.sh v0.1.0-rc.4
+git push origin v0.1.0-rc.4
 ```
 
 The tag workflow creates a draft automatically. For a retry, dispatch on the
 same signed tag so provenance still records its exact tag ref:
 
 ```bash
-gh workflow run release.yml --repo brdweb/omacalendar-widget --ref v0.1.0-rc.3
+gh workflow run release.yml --repo brdweb/omacalendar-widget --ref v0.1.0-rc.4
 ```
 
 Do not dispatch a branch as though it were a release tag. A published release

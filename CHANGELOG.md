@@ -6,6 +6,20 @@ begin.
 
 ## [Unreleased]
 
+## [0.1.0-rc.4] - 2026-09-09
+
+### Fixed
+
+- Use Omarchy 4.0.3's public bar API to suppress hover reveal while the popup
+  is open. Its exposed state is read-only; direct assignment raised an error
+  during popup opening and closing. Preserve compatibility with older hosts.
+- Exercise the read-only host property and setter in the layout regression.
+
+### Changed
+
+- Prepare a new signed candidate for app RC4 qualification, preserving RC3
+  tags, archives and historical evidence. Stable acceptance remains pending.
+
 ## [0.1.0-rc.3] - 2026-09-08
 
 ### Changed

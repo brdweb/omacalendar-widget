@@ -15,7 +15,9 @@ ShellRoot {
     property string fontFamily: "monospace"
     property bool foregroundAnimationEnabled: false
     property var activePopout: null
-    property bool centerHoverRevealSuppressed: false
+    property bool suppressed: false
+    readonly property bool centerHoverRevealSuppressed: suppressed
+    function setCenterHoverRevealSuppressed(value) { suppressed = !!value }
     property var clickTargets: []
 
     function registerClickTarget(target) {
@@ -121,6 +123,16 @@ ShellRoot {
       if (!topPanel || topPanel.bodyViewportHeight <= 0
           || topPanel.bodyContentHeight > topPanel.bodyViewportHeight + 1) {
         root.fail("initial month view clips calendar rows")
+        return
+      }
+      topPanel.setCenterHoverRevealSuppressed(true)
+      if (!topBar.centerHoverRevealSuppressed) {
+        root.fail("host hover suppression was not enabled through its API")
+        return
+      }
+      topPanel.setCenterHoverRevealSuppressed(false)
+      if (topBar.centerHoverRevealSuppressed) {
+        root.fail("host hover suppression was not released through its API")
         return
       }
       topBar.barForeground = "#11aa44"

@@ -19,9 +19,9 @@ class SourceSbomTest(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory(prefix="widget-sbom-test-")
         self.addCleanup(self.tmp.cleanup)
         self.stage = Path(self.tmp.name)
-        self.source = self.stage / "omacalendar-widget-0.1.0-rc.3"
+        self.source = self.stage / "omacalendar-widget-0.1.0-rc.4"
         self.source.mkdir()
-        (self.source / "manifest.json").write_text(json.dumps({"id": "org.omacalendar.widget", "version": "0.1.0-rc.3"}))
+        (self.source / "manifest.json").write_text(json.dumps({"id": "org.omacalendar.widget", "version": "0.1.0-rc.4"}))
         (self.source / "LICENSE").write_text("MIT License\n")
         for name in ("BarWidget.qml", "Panel.qml", "OmaCalendarClient.qml", "release.json"):
             (self.source / name).write_text("fixture")
@@ -32,13 +32,13 @@ class SourceSbomTest(unittest.TestCase):
                          "relationships": [{"spdxElementId": "SPDXRef-DOCUMENT", "relationshipType": "DESCRIBES", "relatedSpdxElement": "SPDXRef-DocumentRoot-stage"}]}
 
     def finish(self) -> dict:
-        return module.finalize(self.document, self.stage, "0.1.0-rc.3")
+        return module.finalize(self.document, self.stage, "0.1.0-rc.4")
 
     def test_complete_identity_hashes_graph_and_scope(self) -> None:
         result = self.finish()
         self.assertEqual(len(result["packages"]), 1)
         self.assertEqual(result["packages"][0]["name"], "omacalendar-widget")
-        self.assertEqual(result["packages"][0]["versionInfo"], "0.1.0-rc.3")
+        self.assertEqual(result["packages"][0]["versionInfo"], "0.1.0-rc.4")
         self.assertEqual(len(result["files"]), 6)
         self.assertEqual(len(result["relationships"]), 7)
         for item in result["files"]:

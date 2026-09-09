@@ -9,25 +9,24 @@ background daemon.
 
 ## Release candidate for acceptance testing
 
-This branch prepares widget `0.1.0-rc.3` with OmaCalendar `1.0.0-rc.3` for
+This branch prepares widget `0.1.0-rc.4` with OmaCalendar `1.0.0-rc.4` for
 release-owner testing. Both candidates remain GitHub **drafts** until the owner
 completes the acceptance pass. Drafts require repository-owner GitHub access;
 they do not replace the public beta download linked above. The recorded app
 version is the candidate qualification target, not a claim that manual testing
 has passed. Follow [the candidate test and rollback guide](docs/STABLE_ACCEPTANCE.md)
-for download, checksums, attestations, installation, and tomorrow's test pass.
+for download, checksums, attestations, installation, and the remaining acceptance pass.
 The candidate archive contains all documentation, and `TESTING.md` is also
 attached to the draft release. Stable `0.1.0` is blocked until its evidence record
 is complete. A native Arch installation of the app supplies the host daemon
 required by the Omarchy widget; a Flatpak-only desktop install is not a widget
 daemon installation.
 
-RC3 targets the corrected app packaging: RC2's Flatpak SPDX listed 61 locale
-files absent from its bundle, and GitHub changed its Debian download filename.
-Widget runtime source is unchanged. RC1/RC2 tags and artifacts are retained;
-download and verify the new RC3 pair, without reusing earlier acceptance claims.
-RC1's earlier tagger-email rejection remains historical. No signature or
-stable acceptance gate is waived.
+RC4 fixes a real Omarchy 4.0.3 integration failure: popup opening and closing
+must call the bar API's setter instead of assigning its read-only hover state.
+The layout regression now exercises that host contract. Earlier signed tags,
+artifacts and evidence are preserved; qualify the newly downloaded RC4 pair.
+No signature or stable acceptance gate is waived.
 
 `org.omacalendar.widget` is the thin Omarchy Shell companion for OmaCalendar. It
 shows a configurable clock and Up Next summary in the bar, then opens
@@ -409,8 +408,8 @@ creates a **draft** candidate containing a deterministic source archive,
 `SHA256SUMS`, an SPDX JSON SBOM, and GitHub provenance/SBOM attestations. It
 never publishes a release automatically.
 
-The current widget candidate is `0.1.0-rc.3`, targeting OmaCalendar
-`1.0.0-rc.3`; the public beta remains `0.1.0-beta.1` with app `1.0.0-beta.1`.
+The current widget candidate is `0.1.0-rc.4`, targeting OmaCalendar
+`1.0.0-rc.4`; the public beta remains `0.1.0-beta.1` with app `1.0.0-beta.1`.
 The recorded target does not synchronize the two release paths. Publication
 remains blocked until the candidate acceptance
 record is complete. Marketplace publication steps and the ready-to-submit issue

@@ -11,7 +11,8 @@ daemon's advertised method list.
 | `0.1.0-beta.1` | `1.0.0-beta.1` | 2 | Beta widget qualification against the published IPC 2 runtime; acceptance pending |
 | `0.1.0-rc.1` | `1.0.0-rc.1` | 2 | Superseded before release artifacts: GitHub tagger-email verification failed; tag retained unchanged |
 | `0.1.0-rc.2` | `1.0.0-rc.2` | 2 | Superseded after app package-integrity verification; signed widget tag and draft preserved |
-| `0.1.0-rc.3` | `1.0.0-rc.3` | 2 | Current candidate for corrected app packaging; fresh artifact and manual runtime acceptance pending |
+| `0.1.0-rc.3` | `1.0.0-rc.3` | 2 | Superseded after real Omarchy 4.0.3 exposed a read-only bar API error; tag and draft preserved |
+| `0.1.0-rc.4` | `1.0.0-rc.4` | 2 | Omarchy read-only bar API fix; exact artifact and remaining runtime acceptance pending |
 
 The current manifest requires Omarchy 4.0.0 or newer, Quickshell 0.3.1 or newer,
 and OmaCalendar IPC 2.0 or newer. The beta metadata and automated suite were
