@@ -6,6 +6,18 @@ begin.
 
 ## [Unreleased]
 
+## [0.1.0-rc.3] - 2026-09-08
+
+### Changed
+
+- Target OmaCalendar `1.0.0-rc.3` after RC2 app verification found a Flatpak
+  bundle/SPDX locale mismatch and a GitHub-normalized Debian filename.
+- Rebuild the independently signed widget candidate and update exact download,
+  installation, and owner acceptance guides. All manual gates remain pending;
+  widget QML/JavaScript runtime is unchanged and needs no matching bug fix.
+- Preserve RC1/RC2 signed tags and historical draft assets. Prior verification
+  is not renamed or carried forward as acceptance of the new RC3 artifacts.
+
 ## [0.1.0-rc.2] - 2026-09-08
 
 ### Changed
@@ -135,7 +147,8 @@ verification failed. The signed RC1 tag remains immutable; use RC2 for testing.
 - Kept inline event creation and editing while removing invitation and reminder
   controls from the compact detail area.
 
-[Unreleased]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-rc.2...HEAD
+[Unreleased]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-rc.3...HEAD
+[0.1.0-rc.3]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-rc.2...v0.1.0-rc.3
 [0.1.0-rc.2]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-rc.1...v0.1.0-rc.2
 [0.1.0-rc.1]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-beta.1...v0.1.0-rc.1
 [0.1.0-beta.1]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-alpha...v0.1.0-beta.1

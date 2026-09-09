@@ -1,6 +1,6 @@
 # Security policy
 
-OmaCalendar widget `0.1.0-rc.2` is a draft release candidate for owner testing.
+OmaCalendar widget `0.1.0-rc.3` is a draft release candidate for owner testing.
 The published `0.1.0-beta.1` remains an unsupported public-testing prerelease.
 It is not suitable for production or as the only way to access calendar data.
 

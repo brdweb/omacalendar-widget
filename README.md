@@ -9,7 +9,7 @@ background daemon.
 
 ## Release candidate for acceptance testing
 
-This branch prepares widget `0.1.0-rc.2` with OmaCalendar `1.0.0-rc.2` for
+This branch prepares widget `0.1.0-rc.3` with OmaCalendar `1.0.0-rc.3` for
 release-owner testing. Both candidates remain GitHub **drafts** until the owner
 completes the acceptance pass. Drafts require repository-owner GitHub access;
 they do not replace the public beta download linked above. The recorded app
@@ -22,10 +22,12 @@ is complete. A native Arch installation of the app supplies the host daemon
 required by the Omarchy widget; a Flatpak-only desktop install is not a widget
 daemon installation.
 
-RC2 supersedes widget `0.1.0-rc.1`: its SSH signature was valid locally, but
-GitHub rejected the tagger identity with `unverified_email` before release
-artifacts were published. The RC1 tag is preserved unchanged; use RC2 for
-testing. This does not waive signature verification or stable acceptance.
+RC3 targets the corrected app packaging: RC2's Flatpak SPDX listed 61 locale
+files absent from its bundle, and GitHub changed its Debian download filename.
+Widget runtime source is unchanged. RC1/RC2 tags and artifacts are retained;
+download and verify the new RC3 pair, without reusing earlier acceptance claims.
+RC1's earlier tagger-email rejection remains historical. No signature or
+stable acceptance gate is waived.
 
 `org.omacalendar.widget` is the thin Omarchy Shell companion for OmaCalendar. It
 shows a configurable clock and Up Next summary in the bar, then opens
@@ -407,8 +409,8 @@ creates a **draft** candidate containing a deterministic source archive,
 `SHA256SUMS`, an SPDX JSON SBOM, and GitHub provenance/SBOM attestations. It
 never publishes a release automatically.
 
-The current widget candidate is `0.1.0-rc.2`, targeting OmaCalendar
-`1.0.0-rc.2`; the public beta remains `0.1.0-beta.1` with app `1.0.0-beta.1`.
+The current widget candidate is `0.1.0-rc.3`, targeting OmaCalendar
+`1.0.0-rc.3`; the public beta remains `0.1.0-beta.1` with app `1.0.0-beta.1`.
 The recorded target does not synchronize the two release paths. Publication
 remains blocked until the candidate acceptance
 record is complete. Marketplace publication steps and the ready-to-submit issue

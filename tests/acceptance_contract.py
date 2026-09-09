@@ -85,7 +85,7 @@ class AcceptanceContractTest(unittest.TestCase):
             git("config", "user.name", "Fixture")
             git("config", "user.email", "fixture@example.invalid")
             git("config", "commit.gpgsign", "false")
-            (root / "manifest.json").write_text('{"version":"0.1.0-rc.2","id":"fixture"}\n')
+            (root / "manifest.json").write_text('{"version":"0.1.0-rc.3","id":"fixture"}\n')
             (root / "BarWidget.qml").write_text("Item {}\n")
             git("add", ".")
             git("commit", "-qm", "fixture candidate")
