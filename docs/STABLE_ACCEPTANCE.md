@@ -3,7 +3,7 @@
 The prepared candidate is widget `0.1.0-rc.1` with native OmaCalendar
 `1.0.0-rc.1`, IPC 2.0 or newer. It is a GitHub draft for owner testing on
 2026-09-09, not a stable release. No manual acceptance is recorded yet.
-The [JSON evidence record](stable-acceptance.json) is deliberately pending;
+The [JSON evidence record](https://github.com/brdweb/omacalendar-widget/blob/v0.1.0-rc.1/docs/stable-acceptance.json) is deliberately pending;
 the stable release workflow rejects it until every required result is recorded.
 
 Use synthetic, disposable test events and a dedicated test calendar. Record
@@ -187,7 +187,7 @@ It is expected to fail today because manual evidence is pending. It requires
 successful rows, evidence, owner, date, and the tested runtime commit in release
 history. After stable artifact verification, publish the widget, promote
 release-only `main` by fast-forward to its signed tag, and verify remote
-HEAD/main/tag identity using [the release procedure](RELEASE.md). Request a new
+HEAD/main/tag identity using [the release procedure](https://github.com/brdweb/omacalendar-widget/blob/v0.1.0-rc.1/docs/RELEASE.md). Request a new
 marketplace snapshot review on existing
 [issue #5421](https://github.com/omacom/omarchy-plugin-marketplace/issues/5421);
 the beta listing's approval does not automatically approve another commit.
