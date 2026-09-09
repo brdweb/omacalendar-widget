@@ -1,0 +1,20 @@
+{
+  "stableVersion": "0.1.0",
+  "candidateVersion": "0.1.0-rc.1",
+  "candidateOmaCalendarVersion": "1.0.0-rc.1",
+  "evidenceCommit": null,
+  "acceptedBy": null,
+  "acceptedAt": null,
+  "gates": {
+    "automated": {"status": "pending", "evidence": ""},
+    "artifacts": {"status": "pending", "evidence": ""},
+    "install_upgrade_remove": {"status": "pending", "evidence": ""},
+    "transactional_restore": {"status": "pending", "evidence": ""},
+    "views_edges": {"status": "pending", "evidence": ""},
+    "keyboard": {"status": "pending", "evidence": ""},
+    "real_mutations": {"status": "pending", "evidence": ""},
+    "resilience": {"status": "pending", "evidence": ""},
+    "desktop_handoff": {"status": "pending", "evidence": ""},
+    "mixed_scale_theme": {"status": "pending", "evidence": ""}
+  }
+}

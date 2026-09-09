@@ -8,6 +8,7 @@ omarchy_root=${OMARCHY_PATH:-/usr/share/omarchy}
 python3 "$plugin_dir/tests/static_contract.py"
 OMARCHY_PATH="$omarchy_root" python3 "$plugin_dir/tests/omarchy_ui_contract.py"
 python3 "$plugin_dir/tests/qualified_app_contract.py"
+python3 "$plugin_dir/tests/acceptance_contract.py"
 python3 "$plugin_dir/tests/preview_contract.py"
 python3 -m json.tool "$plugin_dir/manifest.json" >/dev/null
 for shell_script in \

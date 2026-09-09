@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import re
@@ -143,7 +144,11 @@ def verify_qualified_app(
     expected: Expectations,
     request_json: Callable[[str], dict[str, Any]] = github_json,
     request_text: Callable[[str], str] = github_text,
+    *,
+    candidate: bool = False,
 ) -> QualifiedApp:
+    if candidate and not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+-rc\.[1-9][0-9]*", expected.app_version):
+        raise GateError("candidate qualification requires an explicit rc.N app version")
     tag = f"v{expected.app_version}"
     ref_endpoint = f"repos/{APP_REPOSITORY}/git/ref/tags/{tag}"
     ref = request_json(ref_endpoint)
@@ -165,12 +170,14 @@ def verify_qualified_app(
         raise GateError(f"OmaCalendar {tag} must resolve directly to a commit")
     commit_sha = _sha(target.get("sha"), "OmaCalendar tagged commit")
 
-    release = request_json(f"repos/{APP_REPOSITORY}/releases/tags/{tag}")
-    if release.get("tag_name") != tag:
-        raise GateError("OmaCalendar GitHub release has the wrong tag name")
-    published_at = release.get("published_at")
-    if release.get("draft") is not False or not isinstance(published_at, str) or not published_at:
-        raise GateError(f"OmaCalendar {tag} must have a published, non-draft GitHub release")
+    published_at = "candidate tag only; package and runtime acceptance pending"
+    if not candidate:
+        release = request_json(f"repos/{APP_REPOSITORY}/releases/tags/{tag}")
+        if release.get("tag_name") != tag:
+            raise GateError("OmaCalendar GitHub release has the wrong tag name")
+        published_at = release.get("published_at")
+        if release.get("draft") is not False or not isinstance(published_at, str) or not published_at:
+            raise GateError(f"OmaCalendar {tag} must have a published, non-draft GitHub release")
 
     source = request_text(
         f"repos/{APP_REPOSITORY}/contents/{DOMAIN_HEADER}?ref={commit_sha}"
@@ -203,13 +210,25 @@ def verify_qualified_app(
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--candidate", action="store_true",
+        help="verify an rc.N signed app tag for a draft widget candidate; does not qualify publication or runtime",
+    )
+    arguments = parser.parse_args()
     try:
-        qualified = verify_qualified_app(load_expectations())
+        expected = load_expectations()
+        if arguments.candidate:
+            release = json.loads((ROOT / "release.json").read_text(encoding="utf-8"))
+            if release.get("releaseChannel") != "rc":
+                raise GateError("candidate app qualification is restricted to rc widget metadata")
+        qualified = verify_qualified_app(expected, candidate=arguments.candidate)
     except (GateError, json.JSONDecodeError, OSError) as error:
         raise SystemExit(f"qualified OmaCalendar release verification failed: {error}") from error
     print(
-        f"Qualified {APP_REPOSITORY} {qualified.tag} at {qualified.commit}: "
-        f"published {qualified.published_at}, IPC "
+        f"{'Candidate contract' if arguments.candidate else 'Qualified release'}: "
+        f"{APP_REPOSITORY} {qualified.tag} at {qualified.commit}: "
+        f"{qualified.published_at}, IPC "
         f"{qualified.protocol_major}.{qualified.protocol_minor}"
     )
 

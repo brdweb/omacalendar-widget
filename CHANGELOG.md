@@ -6,6 +6,26 @@ begin.
 
 ## [Unreleased]
 
+## [0.1.0-rc.1] - 2026-09-08
+
+### Added
+
+- Draft candidate downloads and a complete owner test, evidence, and rollback
+  guide for qualification with OmaCalendar `1.0.0-rc.1`.
+- A stable publication gate that requires every acceptance item to pass with
+  evidence and owner sign-off; runtime changes invalidate earlier acceptance.
+- Separate signed-app contract verification for RC draft preparation while
+  published stable qualification still requires a published app release.
+- Checksummed and attested test instructions and an acceptance-record template
+  attached alongside the deterministic widget source archive.
+
+### Changed
+
+- Reconciled the historical beta acceptance record with the now-approved
+  marketplace listing and documented the README-only `main` change after beta.
+- Stable promotion and marketplace snapshot updates remain pending owner
+  testing; the runtime QML/JavaScript is unchanged from the public beta.
+
 ## [0.1.0-beta.1] - 2026-09-06
 
 ### Added
@@ -93,6 +113,7 @@ begin.
 - Kept inline event creation and editing while removing invitation and reminder
   controls from the compact detail area.
 
-[Unreleased]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-beta.1...HEAD
+[Unreleased]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-rc.1...HEAD
+[0.1.0-rc.1]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-beta.1...v0.1.0-rc.1
 [0.1.0-beta.1]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-alpha...v0.1.0-beta.1
 [0.1.0-alpha]: https://github.com/brdweb/omacalendar-widget/releases/tag/v0.1.0-alpha

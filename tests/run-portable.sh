@@ -6,6 +6,7 @@ qt_bin=${QT_BIN_DIR:-/usr/lib/qt6/bin}
 
 python3 "$plugin_dir/tests/static_contract.py"
 python3 "$plugin_dir/tests/qualified_app_contract.py"
+python3 "$plugin_dir/tests/acceptance_contract.py"
 python3 -m json.tool "$plugin_dir/manifest.json" >/dev/null
 for shell_script in "$plugin_dir"/tests/*.sh "$plugin_dir"/scripts/release/*.sh; do
   bash -n "$shell_script"

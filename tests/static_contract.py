@@ -117,17 +117,17 @@ class StaticContractTest(unittest.TestCase):
     def test_manifest_identity_and_compatibility(self) -> None:
         manifest = json.loads(text("manifest.json"))
         self.assertEqual(manifest["id"], "org.omacalendar.widget")
-        self.assertEqual(manifest["version"], "0.1.0-beta.1")
+        self.assertEqual(manifest["version"], "0.1.0-rc.1")
         self.assertEqual(manifest["entryPoints"]["barWidget"], "BarWidget.qml")
         self.assertEqual(manifest["compatibility"]["omacalendarProtocolMajor"], 2)
         self.assertEqual(manifest["compatibility"]["minimumOmaCalendarProtocolMinor"], 0)
         self.assertEqual(manifest["compatibility"]["minimumOmarchy"], "4.0.0")
         release = json.loads(text("release.json"))
         self.assertEqual(release["widgetVersion"], manifest["version"])
-        self.assertEqual(release["testedOmaCalendarVersion"], "1.0.0-beta.1")
+        self.assertEqual(release["testedOmaCalendarVersion"], "1.0.0-rc.1")
         self.assertEqual(release["omacalendarProtocolMajor"], 2)
         self.assertEqual(release["minimumOmaCalendarProtocolMinor"], 0)
-        self.assertEqual(release["releaseChannel"], "beta")
+        self.assertEqual(release["releaseChannel"], "rc")
         self.assertEqual(release["trustedInstallBranch"], "main")
         self.assertEqual(
             release["trustedInstallTag"], f'v{release["widgetVersion"]}'

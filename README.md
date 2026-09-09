@@ -7,6 +7,21 @@ and follow [Install the required OmaCalendar app](#install-the-required-omacalen
 below before installing this widget. The widget does not include the app or its
 background daemon.
 
+## Release candidate for acceptance testing
+
+This branch prepares widget `0.1.0-rc.1` with OmaCalendar `1.0.0-rc.1` for
+release-owner testing. Both candidates remain GitHub **drafts** until the owner
+completes the acceptance pass. Drafts require repository-owner GitHub access;
+they do not replace the public beta download linked above. The recorded app
+version is the candidate qualification target, not a claim that manual testing
+has passed. Follow [the candidate test and rollback guide](docs/STABLE_ACCEPTANCE.md)
+for download, checksums, attestations, installation, and tomorrow's test pass.
+The candidate archive contains all documentation, and `TESTING.md` is also
+attached to the draft release. Stable `0.1.0` is blocked until its evidence record
+is complete. A native Arch installation of the app supplies the host daemon
+required by the Omarchy widget; a Flatpak-only desktop install is not a widget
+daemon installation.
+
 `org.omacalendar.widget` is the thin Omarchy Shell companion for OmaCalendar. It
 shows a configurable clock and Up Next summary in the bar, then opens
 keyboard-friendly Month, Day, Week, and Agenda views with search and inline
@@ -16,8 +31,8 @@ conflict resolution, and durable writes remain owned by `omacalendard`.
 ![OmaCalendar widget showing a month calendar and agenda populated with synthetic events](preview.png)
 
 This repository is intentionally separate from the desktop application. The
-widget has its own version and release cadence. Widget `0.1.0-beta.1` is the
-public-testing candidate qualified against the published OmaCalendar
+widget has its own version and release cadence. The currently published widget
+`0.1.0-beta.1` is qualified against the published OmaCalendar
 `1.0.0-beta.1` runtime over IPC 2. That app version is compatibility evidence only: app
 and widget versions, tags, and publication dates do not need to match. This
 widget beta is not a stable or production-supported release.
@@ -66,7 +81,7 @@ uses only the user-local IPC connection to `omacalendard`.
 
 ## Install a verified release archive
 
-After `v0.1.0-beta.1` is published, the immutable public-install path is the
+For published `v0.1.0-beta.1`, the immutable public-install path is the
 source archive produced from that reviewed signed tag. Download it into an
 empty directory, verify its exact checksum plus both GitHub attestations,
 validate the extracted plugin, and only then place it in Omarchy's user plugin
@@ -113,7 +128,11 @@ the remote default branch, and `plugin update` fetches and fast-forwards
 `origin HEAD`. The official repository therefore treats its default
 release-only `main` branch as an install channel: it advances only to the exact
 commit of a reviewed, signed, published release tag, never to development
-commits. With that trust boundary understood, install and enable with:
+commits. On 2026-09-08, a README-only change advanced `main` beyond the signed
+beta snapshot. The release-only invariant is therefore not currently met;
+use the verified archive above for the beta, or the draft candidate guide for
+testing. The next accepted release must repair this by normal forward
+promotion. Once that invariant has been re-established, install and enable with:
 
 ```bash
 omarchy plugin add https://github.com/brdweb/omacalendar-widget.git --enable

@@ -97,6 +97,8 @@ for required_file in \
   SECURITY.md \
   release.json \
   docs/BETA_ACCEPTANCE.md \
+  docs/STABLE_ACCEPTANCE.md \
+  docs/stable-acceptance.json \
   docs/COMPATIBILITY.md \
   docs/MARKETPLACE.md \
   docs/MARKETPLACE_SUBMISSION.md \
@@ -106,6 +108,8 @@ for required_file in \
     exit 1
   fi
 done
+
+python3 "${repository_root}/scripts/release/verify-acceptance.py" "${release_tag}"
 
 preview_count=0
 preview_path=

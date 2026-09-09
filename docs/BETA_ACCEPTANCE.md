@@ -1,5 +1,13 @@
 # Widget 0.1.0-beta.1 acceptance
 
+Historical beta record. The beta was published on 2026-09-07 and marketplace
+issue [#5421](https://github.com/omacom/omarchy-plugin-marketplace/issues/5421)
+was approved and listed on 2026-09-08 against commit
+`3940df1465bd5fa85541880058ac93745f69cfca`. These later publication facts do not
+prove the still-unrecorded manual behavior below. New work uses
+[`STABLE_ACCEPTANCE.md`](STABLE_ACCEPTANCE.md) and its machine-checked evidence
+record; this historical checklist is not the RC approval authority.
+
 This record separates checks that can run in automation from the real Omarchy
 and release-owner checks required before tagging `v0.1.0-beta.1`. Check an item
 only when it was exercised against the candidate commit. Record failures as

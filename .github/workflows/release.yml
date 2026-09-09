@@ -1,6 +1,7 @@
 name: Release candidate
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - 'v[0-9]*.[0-9]*.[0-9]*'
@@ -75,10 +76,16 @@ jobs:
           fi
           ./scripts/release/verify-release.sh "${GITHUB_REF_NAME}"
 
-      - name: Verify the qualified published OmaCalendar app release
+      - name: Verify the app contract and stable acceptance boundary
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 scripts/release/verify-qualified-app.py
+        run: |
+          python3 scripts/release/verify-acceptance.py "${GITHUB_REF_NAME}"
+          if [[ ${GITHUB_REF_NAME} =~ ^v[0-9]+\.[0-9]+\.[0-9]+-rc\.[1-9][0-9]*$ ]]; then
+            python3 scripts/release/verify-qualified-app.py --candidate
+          else
+            python3 scripts/release/verify-qualified-app.py
+          fi
 
       - name: Run portable contracts
         run: ./tests/run-portable.sh
@@ -93,6 +100,11 @@ jobs:
           tar -xzf "artifacts/${archive}" -C stage
           echo "version=${version}" >>"${GITHUB_OUTPUT}"
           echo "archive=${archive}" >>"${GITHUB_OUTPUT}"
+
+      - name: Include release test instructions
+        run: |
+          cp docs/STABLE_ACCEPTANCE.md artifacts/TESTING.md
+          cp docs/stable-acceptance.json artifacts/stable-acceptance.json
 
       - name: Generate SPDX SBOM
         uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
@@ -110,6 +122,7 @@ jobs:
           LC_ALL=C sha256sum \
             "${{ steps.package.outputs.archive }}" \
             "omacalendar-widget-${{ steps.package.outputs.version }}.spdx.json" \
+            TESTING.md stable-acceptance.json \
             >SHA256SUMS
           sha256sum --check SHA256SUMS
 
@@ -119,6 +132,8 @@ jobs:
           subject-path: |
             artifacts/${{ steps.package.outputs.archive }}
             artifacts/SHA256SUMS
+            artifacts/TESTING.md
+            artifacts/stable-acceptance.json
 
       - name: Attest archive SBOM
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4

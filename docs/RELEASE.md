@@ -6,11 +6,49 @@ the recorded app compatibility target and widget owner-acceptance matrix pass.
 The recorded app tag is qualification evidence, not a requirement that the
 projects use matching versions or publish simultaneously.
 
+## Current RC preparation
+
+Widget `0.1.0-rc.1` and app `1.0.0-rc.1` are owner-test candidates. The user
+requested preparation now and manual testing on 2026-09-09. Keep both releases
+as drafts and keep widget RC metadata on its candidate branch until accepted.
+[`STABLE_ACCEPTANCE.md`](STABLE_ACCEPTANCE.md) is the current test/download/
+rollback procedure; [`stable-acceptance.json`](stable-acceptance.json) holds the
+pending evidence. The historical beta checklist is not stable approval.
+
+An RC draft verifies its own signed tag and clean source, the signed candidate
+app tag and IPC constants, complete automated suites, preview, archive,
+checksums, SBOM, and attestations. The app contract check uses `--candidate`
+only for an explicit `rc.N` widget and app. It does not claim app publication,
+package installation, or runtime acceptance. The repository-scoped workflow
+token cannot read another repository's draft assets; the owner verifies those
+downloads separately. Non-RC release paths continue to require a published app.
+
+Prepare the app's signed RC tag first, then the widget's signed RC tag:
+
+```bash
+git tag -s v0.1.0-rc.1 -m 'OmaCalendar widget 0.1.0-rc.1'
+./scripts/release/verify-release.sh v0.1.0-rc.1
+git push origin v0.1.0-rc.1
+```
+
+The tag workflow creates a draft automatically. For a retry, dispatch on the
+same signed tag so provenance still records its exact tag ref:
+
+```bash
+gh workflow run release.yml --repo brdweb/omacalendar-widget --ref v0.1.0-rc.1
+```
+
+Do not dispatch a branch as though it were a release tag. A published release
+is never overwritten. A changed candidate needs a new RC tag/version.
+Stable tags additionally run `verify-acceptance.py`, which blocks on any
+pending/failed gate, missing evidence/sign-off, or changed accepted runtime.
+
 ## Prepare and qualify
 
 1. Pass `./tests/run.sh` on the release-reference Omarchy system and complete
    the real four-edge, mixed-scale multi-monitor, keyboard, theme-reload,
-   daemon-restart, and offline-cache acceptance pass.
+   daemon-restart, and offline-cache acceptance pass before stable publication.
+   Draft RC preparation may precede the owner pass with explicit pending gates.
 2. Update the widget version in `manifest.json` and `release.json`, the tested
    app version in `release.json`, this repository's changelog, and the exact row
    in `COMPATIBILITY.md`. Preserve manifest ID `org.omacalendar.widget` and the
@@ -27,21 +65,21 @@ projects use matching versions or publish simultaneously.
 5. Add one real, privacy-safe root `preview.png` captured from the widget with
    synthetic data. Do not use a mockup or include personal event, account,
    notification, or desktop data. Record the result in
-   [`BETA_ACCEPTANCE.md`](BETA_ACCEPTANCE.md).
-6. Confirm the permanent plugin ID is not present in the current marketplace
-   registry or an existing submission, and validate the exact default-branch
-   commit using the current
+   [`STABLE_ACCEPTANCE.md`](STABLE_ACCEPTANCE.md).
+6. Check the existing marketplace listing and submission #5421, and validate
+   the next promoted default-branch commit using the current
    [marketplace submission contract](https://github.com/omacom/omarchy-plugin-marketplace/blob/main/SUBMISSION.md).
+   Do not open a duplicate submission for the already registered plugin ID.
 
 ## Create a candidate
 
-For the current candidate, create a signed annotated tag only from the accepted
-commit:
+For a future stable release, complete the stable acceptance record and create
+a signed annotated tag only from the accepted commit:
 
 ```bash
-git tag -s v0.1.0-beta.1 -m 'OmaCalendar widget 0.1.0-beta.1'
-./scripts/release/verify-release.sh v0.1.0-beta.1
-git push origin v0.1.0-beta.1
+git tag -s v0.1.0 -m 'OmaCalendar widget 0.1.0'
+./scripts/release/verify-release.sh v0.1.0
+git push origin v0.1.0
 ```
 
 The tag workflow verifies the recorded app's annotated tag, GitHub signature,
@@ -73,7 +111,7 @@ Promote the exact tag commit with a normal fast-forward, then prove that the
 remote default branch, `main`, and the peeled signed tag are identical:
 
 ```bash
-release_tag=v0.1.0-beta.1
+release_tag=v0.1.0
 release_commit=$(git rev-parse "${release_tag}^{commit}")
 test "$(gh release view "${release_tag}" --json isDraft --jq .isDraft)" = false
 git fetch origin main
@@ -98,9 +136,12 @@ Publish a new patch release when the accepted code must change.
 
 ## Submit to Omarchy Plugins
 
-Only after the promotion checks above pass, review the exact title and body in
-[`MARKETPLACE.md`](MARKETPLACE.md), confirm all five owner statements, and
-create the one submission issue. The marketplace bot reruns compatibility
+Initial submission #5421 is already approved and listed for the beta snapshot.
+Do not create another issue. Only after the promotion checks above pass, request
+a snapshot update on the existing listing for the new accepted commit. The
+initial-submission reference in [`MARKETPLACE.md`](MARKETPLACE.md) and
+`MARKETPLACE_SUBMISSION.md` records the prior owner statements.
+The marketplace bot reruns compatibility
 validation and its limited static baseline against the observed commit; a
 maintainer must apply `approved-and-verified` before the listing is published.
 For later releases, request verification of the new full `main` commit only

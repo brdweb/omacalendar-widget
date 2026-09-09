@@ -123,6 +123,44 @@ class QualifiedAppContractTest(unittest.TestCase):
                 self.request_text,
             )
 
+    def candidate_fixture(self) -> None:
+        self.expected = GATE.Expectations("1.0.0-rc.1", 2, 0)
+        self.tag = "v1.0.0-rc.1"
+        self.ref_endpoint = f"repos/{GATE.APP_REPOSITORY}/git/ref/tags/{self.tag}"
+        self.responses = {
+            self.ref_endpoint: {
+                "ref": f"refs/tags/{self.tag}",
+                "object": {"type": "tag", "sha": TAG_SHA},
+            },
+            f"repos/{GATE.APP_REPOSITORY}/git/tags/{TAG_SHA}": {
+                "tag": self.tag,
+                "verification": {"verified": True},
+                "object": {"type": "commit", "sha": COMMIT_SHA},
+            },
+        }
+
+    def test_candidate_verifies_signed_contract_without_claiming_publication(self) -> None:
+        self.candidate_fixture()
+        qualified = GATE.verify_qualified_app(
+            self.expected, self.request_json, self.request_text, candidate=True,
+        )
+        self.assertEqual(qualified.commit, COMMIT_SHA)
+        self.assertIn("acceptance pending", qualified.published_at)
+
+    def test_candidate_mode_cannot_be_used_for_a_stable_app(self) -> None:
+        with self.assertRaisesRegex(GATE.GateError, "explicit rc.N"):
+            GATE.verify_qualified_app(GATE.Expectations("1.0.0", 2, 0), candidate=True)
+
+    def test_candidate_still_rejects_unverified_tag(self) -> None:
+        self.candidate_fixture()
+        self.responses[f"repos/{GATE.APP_REPOSITORY}/git/tags/{TAG_SHA}"]["verification"] = {
+            "verified": False,
+        }
+        with self.assertRaisesRegex(GATE.GateError, "verify the signature"):
+            GATE.verify_qualified_app(
+                self.expected, self.request_json, self.request_text, candidate=True,
+            )
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

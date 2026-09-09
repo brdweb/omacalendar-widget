@@ -1,5 +1,19 @@
 # Omarchy marketplace submission
 
+## Current listing
+
+The initial submission [#5421](https://github.com/omacom/omarchy-plugin-marketplace/issues/5421)
+was closed as listed and `approved-and-verified` on 2026-09-08. The maintainer-
+reviewed snapshot is `3940df1465bd5fa85541880058ac93745f69cfca`, the signed
+`v0.1.0-beta.1` commit. The following submission body is retained as the
+historical initial-submission contract; do not create a duplicate issue.
+Widget `0.1.0-rc.1` is a private draft for owner acceptance and has not been
+approved as a newer marketplace snapshot. Once the next release is accepted,
+published, and promoted, request verification of its exact new commit on the
+existing listing. Marketplace verification is separate from product acceptance.
+
+## Initial submission reference
+
 The OmaCalendar widget is published independently from the desktop application.
 Submit only after the widget repository is public, `v0.1.0-beta.1` is published,
 and remote default branch `main` points to that signed tag's exact commit.
