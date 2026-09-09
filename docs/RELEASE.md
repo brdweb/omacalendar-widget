@@ -8,12 +8,20 @@ projects use matching versions or publish simultaneously.
 
 ## Current RC preparation
 
-Widget `0.1.0-rc.1` and app `1.0.0-rc.1` are owner-test candidates. The user
+Widget `0.1.0-rc.2` and app `1.0.0-rc.2` are owner-test candidates. The user
 requested preparation now and manual testing on 2026-09-09. Keep both releases
 as drafts and keep widget RC metadata on its candidate branch until accepted.
 [`STABLE_ACCEPTANCE.md`](STABLE_ACCEPTANCE.md) is the current test/download/
 rollback procedure; [`stable-acceptance.json`](stable-acceptance.json) holds the
 pending evidence. The historical beta checklist is not stable approval.
+
+Widget RC1 was superseded before release artifacts were produced. Its SSH
+signature verified locally, but GitHub reported `unverified_email` for the
+tagger identity, so the release gate correctly stopped. Preserve the signed
+`v0.1.0-rc.1` tag unchanged; do not delete, move, or retry it as RC2. RC2 uses
+the repository owner's GitHub-verified tagger email and a new signed tag.
+The [RC1 workflow](https://github.com/brdweb/omacalendar-widget/actions/runs/34303331925)
+stopped at the signed-tag gate without creating a draft or release assets.
 
 An RC draft verifies its own signed tag and clean source, the signed candidate
 app tag and IPC constants, complete automated suites, preview, archive,
@@ -23,19 +31,31 @@ package installation, or runtime acceptance. The repository-scoped workflow
 token cannot read another repository's draft assets; the owner verifies those
 downloads separately. Non-RC release paths continue to require a published app.
 
+The SPDX attestation describes the exact widget source archive: a versioned
+widget package and SHA-1/SHA-256 hashes for all shipped regular files. It does
+not inventory the separately installed native app/daemon, Quickshell, Qt,
+Omarchy, or their dependencies. Scanner-identified build/test tools are source
+metadata, not bundled runtime libraries. Symlinks are not hashed as independent
+file contents; license conclusions remain `NOASSERTION` with the shipped MIT
+license available for review.
+
 Prepare the app's signed RC tag first, then the widget's signed RC tag:
 
 ```bash
-git tag -s v0.1.0-rc.1 -m 'OmaCalendar widget 0.1.0-rc.1'
-./scripts/release/verify-release.sh v0.1.0-rc.1
-git push origin v0.1.0-rc.1
+git config --local user.name 'Jason Mitchell'
+git config --local user.email '58915+brdweb@users.noreply.github.com'
+git -c user.name='Jason Mitchell' \
+  -c user.email='58915+brdweb@users.noreply.github.com' \
+  tag -s v0.1.0-rc.2 -m 'OmaCalendar widget 0.1.0-rc.2'
+./scripts/release/verify-release.sh v0.1.0-rc.2
+git push origin v0.1.0-rc.2
 ```
 
 The tag workflow creates a draft automatically. For a retry, dispatch on the
 same signed tag so provenance still records its exact tag ref:
 
 ```bash
-gh workflow run release.yml --repo brdweb/omacalendar-widget --ref v0.1.0-rc.1
+gh workflow run release.yml --repo brdweb/omacalendar-widget --ref v0.1.0-rc.2
 ```
 
 Do not dispatch a branch as though it were a release tag. A published release
@@ -56,9 +76,12 @@ pending/failed gate, missing evidence/sign-off, or changed accepted runtime.
    signed widget tag and keep `trustedInstallBranch` equal to release-only
    `main`.
 3. Confirm the OmaCalendar app tag recorded in `release.json` is annotated and
-   GitHub-signature-verified, resolves directly to a commit, has a published
-   non-draft GitHub release, and exposes the recorded IPC major and minimum minor
-   in its tagged source. The app and widget version numbers need not match.
+   GitHub-signature-verified, resolves directly to a commit, and exposes the
+   recorded IPC major and minimum minor in its tagged source. Stable/non-RC
+   widget qualification additionally requires a published non-draft app release.
+   An explicit `rc.N` widget/app pair uses the signed-source-only `--candidate`
+   check described above; app package and manual runtime acceptance stay pending.
+   The app and widget version numbers need not match.
 4. Run portable and complete tests from a clean checkout and review the secret
    scan. The widget archive must contain no credentials, database, runtime
    socket, or provider networking implementation.
@@ -77,7 +100,9 @@ For a future stable release, complete the stable acceptance record and create
 a signed annotated tag only from the accepted commit:
 
 ```bash
-git tag -s v0.1.0 -m 'OmaCalendar widget 0.1.0'
+git -c user.name='Jason Mitchell' \
+  -c user.email='58915+brdweb@users.noreply.github.com' \
+  tag -s v0.1.0 -m 'OmaCalendar widget 0.1.0'
 ./scripts/release/verify-release.sh v0.1.0
 git push origin v0.1.0
 ```

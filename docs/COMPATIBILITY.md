@@ -9,7 +9,8 @@ daemon's advertised method list.
 |---|---|---:|---|
 | `0.1.0-alpha` | `1.0.0-alpha` | 2 | Alpha compatibility record; owner acceptance pending |
 | `0.1.0-beta.1` | `1.0.0-beta.1` | 2 | Beta widget qualification against the published IPC 2 runtime; acceptance pending |
-| `0.1.0-rc.1` | `1.0.0-rc.1` | 2 | Draft candidate qualification target; package and manual runtime acceptance pending |
+| `0.1.0-rc.1` | `1.0.0-rc.1` | 2 | Superseded before release artifacts: GitHub tagger-email verification failed; tag retained unchanged |
+| `0.1.0-rc.2` | `1.0.0-rc.2` | 2 | Current draft candidate qualification target; package and manual runtime acceptance pending |
 
 The current manifest requires Omarchy 4.0.0 or newer, Quickshell 0.3.1 or newer,
 and OmaCalendar IPC 2.0 or newer. The beta metadata and automated suite were

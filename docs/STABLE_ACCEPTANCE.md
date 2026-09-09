@@ -1,10 +1,15 @@
 # Widget 0.1.0 release candidate acceptance
 
-The prepared candidate is widget `0.1.0-rc.1` with native OmaCalendar
-`1.0.0-rc.1`, IPC 2.0 or newer. It is a GitHub draft for owner testing on
+The prepared candidate is widget `0.1.0-rc.2` with native OmaCalendar
+`1.0.0-rc.2`, IPC 2.0 or newer. It is a GitHub draft for owner testing on
 2026-09-09, not a stable release. No manual acceptance is recorded yet.
-The [JSON evidence record](https://github.com/brdweb/omacalendar-widget/blob/v0.1.0-rc.1/docs/stable-acceptance.json) is deliberately pending;
+The [JSON evidence record](https://github.com/brdweb/omacalendar-widget/blob/v0.1.0-rc.2/docs/stable-acceptance.json) is deliberately pending;
 the stable release workflow rejects it until every required result is recorded.
+
+Widget RC1 was superseded before release artifacts were published because
+GitHub rejected its tagger email (`unverified_email`), despite a valid local
+SSH signature. Its signed tag remains unchanged. Download and test RC2 only;
+no acceptance evidence or signature exception carries forward from RC1.
 
 Use synthetic, disposable test events and a dedicated test calendar. Record
 test names and outcomes without calendar contents, email addresses, credentials,
@@ -15,9 +20,9 @@ or private server URLs. Keep any local backup outside the repositories.
 Sign in to `gh` with the repository-owner account. Draft releases are visible to
 accounts with repository write access; unauthenticated public download links
 do not work until publication. Install the app's native Arch candidate using
-its tagged [installation guide](https://github.com/brdweb/omacalendar/blob/v1.0.0-rc.1/docs/INSTALL.md)
-and [owner test plan](https://github.com/brdweb/omacalendar/blob/v1.0.0-rc.1/docs/OWNER_TESTING.md).
-The expected Arch file is `omacalendar-1.0.0rc1-1-x86_64.pkg.tar.zst`.
+its tagged [installation guide](https://github.com/brdweb/omacalendar/blob/v1.0.0-rc.2/docs/INSTALL.md)
+and [owner test plan](https://github.com/brdweb/omacalendar/blob/v1.0.0-rc.2/docs/OWNER_TESTING.md).
+The expected Arch file is `omacalendar-1.0.0rc2-1-x86_64.pkg.tar.zst`.
 The Omarchy widget requires the native host daemon and `omacalendard.socket`;
 the Flatpak desktop alone does not provide this host integration. Debian and
 Flatpak desktop installation are separate app gates. The app's normal widget
@@ -29,7 +34,7 @@ checksum, archive provenance, and SPDX attestation before extraction:
 
 ```bash
 set -euo pipefail
-release_version=0.1.0-rc.1
+release_version=0.1.0-rc.2
 release_tag="v${release_version}"
 candidate_dir=$(mktemp -d /tmp/omacalendar-widget-acceptance.XXXXXX)
 gh release download "${release_tag}" --repo brdweb/omacalendar-widget \
@@ -52,12 +57,15 @@ omarchy plugin validate "${source_dir}"
 All instructions and the evidence template are inside the source archive.
 The release also includes `TESTING.md` and `stable-acceptance.json` directly.
 Keep the verified archive and its checksum manifest until the test is accepted.
+The source SPDX records the widget's exact version and regular-file hashes;
+it is not an inventory of the separately installed app, Quickshell, Qt, or
+Omarchy runtime dependencies.
 
 Capture candidate identity and runtime versions in private test notes:
 
 ```bash
 set -euo pipefail
-tag_object=$(gh api repos/brdweb/omacalendar-widget/git/ref/tags/v0.1.0-rc.1 \
+tag_object=$(gh api repos/brdweb/omacalendar-widget/git/ref/tags/v0.1.0-rc.2 \
   --jq '.object.sha')
 gh api "repos/brdweb/omacalendar-widget/git/tags/${tag_object}" \
   --jq '{tag: .tag, commit: .object.sha, verified: .verification.verified}'
@@ -187,7 +195,7 @@ It is expected to fail today because manual evidence is pending. It requires
 successful rows, evidence, owner, date, and the tested runtime commit in release
 history. After stable artifact verification, publish the widget, promote
 release-only `main` by fast-forward to its signed tag, and verify remote
-HEAD/main/tag identity using [the release procedure](https://github.com/brdweb/omacalendar-widget/blob/v0.1.0-rc.1/docs/RELEASE.md). Request a new
+HEAD/main/tag identity using [the release procedure](https://github.com/brdweb/omacalendar-widget/blob/v0.1.0-rc.2/docs/RELEASE.md). Request a new
 marketplace snapshot review on existing
 [issue #5421](https://github.com/omacom/omarchy-plugin-marketplace/issues/5421);
 the beta listing's approval does not automatically approve another commit.

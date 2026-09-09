@@ -124,8 +124,8 @@ class QualifiedAppContractTest(unittest.TestCase):
             )
 
     def candidate_fixture(self) -> None:
-        self.expected = GATE.Expectations("1.0.0-rc.1", 2, 0)
-        self.tag = "v1.0.0-rc.1"
+        self.expected = GATE.Expectations("1.0.0-rc.2", 2, 0)
+        self.tag = "v1.0.0-rc.2"
         self.ref_endpoint = f"repos/{GATE.APP_REPOSITORY}/git/ref/tags/{self.tag}"
         self.responses = {
             self.ref_endpoint: {

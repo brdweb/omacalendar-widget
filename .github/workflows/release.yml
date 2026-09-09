@@ -116,6 +116,13 @@ jobs:
           upload-artifact: false
           upload-release-assets: false
 
+      - name: Complete versioned source-file SPDX inventory
+        run: |
+          python3 scripts/release/finalize-sbom.py \
+            --input "artifacts/omacalendar-widget-${{ steps.package.outputs.version }}.spdx.json" \
+            --stage stage --version "${{ steps.package.outputs.version }}" \
+            --output "artifacts/omacalendar-widget-${{ steps.package.outputs.version }}.spdx.json"
+
       - name: Write and verify checksums
         working-directory: artifacts
         run: |

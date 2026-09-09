@@ -6,7 +6,29 @@ begin.
 
 ## [Unreleased]
 
+## [0.1.0-rc.2] - 2026-09-08
+
+### Changed
+
+- Prepare the replacement draft candidate with OmaCalendar `1.0.0-rc.2` and
+  update the exact download, installation, verification, and acceptance guides.
+- Supersede RC1 after GitHub rejected its tagger email as `unverified_email`,
+  despite its valid local SSH signature. No widget release artifacts were
+  published from RC1; its existing signed tag is preserved unchanged.
+- Require the GitHub-verified release-owner tagger identity for the new signed
+  RC2 tag. All manual stable acceptance gates remain pending; widget runtime
+  QML/JavaScript is unchanged.
+
+### Fixed
+
+- Complete the source SPDX inventory with the exact widget identity/version,
+  real shipped-file SHA-1/SHA-256 hashes, and explicit external-runtime scope.
+  Reject missing source files, manifest mismatches, and invalid graph links.
+
 ## [0.1.0-rc.1] - 2026-09-08
+
+Superseded before release artifacts were published because GitHub tagger-email
+verification failed. The signed RC1 tag remains immutable; use RC2 for testing.
 
 ### Added
 
@@ -113,7 +135,8 @@ begin.
 - Kept inline event creation and editing while removing invitation and reminder
   controls from the compact detail area.
 
-[Unreleased]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-rc.1...HEAD
+[Unreleased]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-rc.2...HEAD
+[0.1.0-rc.2]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-rc.1...v0.1.0-rc.2
 [0.1.0-rc.1]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-beta.1...v0.1.0-rc.1
 [0.1.0-beta.1]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-alpha...v0.1.0-beta.1
 [0.1.0-alpha]: https://github.com/brdweb/omacalendar-widget/releases/tag/v0.1.0-alpha
