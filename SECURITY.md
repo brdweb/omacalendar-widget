@@ -1,6 +1,7 @@
 # Security policy
 
-OmaCalendar widget `0.1.0-beta.1` is an unsupported public-testing prerelease.
+OmaCalendar widget `0.1.0-rc.1` is a draft release candidate for owner testing.
+The published `0.1.0-beta.1` remains an unsupported public-testing prerelease.
 It is not suitable for production or as the only way to access calendar data.
 
 Report suspected vulnerabilities privately with GitHub's **Report a
@@ -22,3 +23,8 @@ boundary. It advances only by fast-forward to the exact commit of a reviewed,
 signed, published release tag; development remains on other branches. Users who
 need an immutable source should install the checksummed, GitHub-attested release
 archive documented in `README.md`.
+
+Stable publication additionally requires the completed owner evidence in
+`docs/stable-acceptance.json`. The release gate rejects pending or failed items,
+missing evidence, and runtime changes after the accepted candidate commit.
+Passing automated or fixture tests alone is not stable acceptance.
