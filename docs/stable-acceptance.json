@@ -1,14 +1,14 @@
 {
-  "stableVersion": "0.1.0",
-  "candidateVersion": "0.1.0",
+  "stableVersion": "0.1.1",
+  "candidateVersion": "0.1.1",
   "candidateOmaCalendarVersion": "1.0.0",
-  "evidenceCommit": "89bb4f82dfb2131a31f216be1f762be5d6450b96",
+  "evidenceCommit": "d87804b45b9e51e527fa0e959c362e16cdeafa52",
   "acceptedBy": "brdweb (release maintainer)",
-  "acceptedAt": "2026-09-09T22:55:26.795437+00:00",
+  "acceptedAt": "2026-09-09T23:30:00+00:00",
   "gates": {
     "automated": {
       "status": "passed",
-      "evidence": "Complete tests/run.sh passed on current Omarchy 2026-09-09; final CI repeats all contracts."
+      "evidence": "Complete tests/run.sh passed on current Omarchy for the unchanged accepted runtime; 0.1.1 changes only release metadata and the marketplace-facing prerequisite description. Final CI repeats all contracts."
     },
     "artifacts": {
       "status": "passed",
