@@ -117,7 +117,8 @@ class StaticContractTest(unittest.TestCase):
     def test_manifest_identity_and_compatibility(self) -> None:
         manifest = json.loads(text("manifest.json"))
         self.assertEqual(manifest["id"], "org.omacalendar.widget")
-        self.assertEqual(manifest["version"], "0.1.0")
+        self.assertEqual(manifest["version"], "0.1.1")
+        self.assertIn("Requires the separately installed OmaCalendar app", manifest["description"])
         self.assertEqual(manifest["entryPoints"]["barWidget"], "BarWidget.qml")
         self.assertEqual(manifest["compatibility"]["omacalendarProtocolMajor"], 2)
         self.assertEqual(manifest["compatibility"]["minimumOmaCalendarProtocolMinor"], 0)
@@ -150,7 +151,7 @@ class StaticContractTest(unittest.TestCase):
         release_guide = text("docs/RELEASE.md")
 
         self.assertIn("Install a verified release archive", readme)
-        self.assertIn("release_version=0.1.0", readme)
+        self.assertIn("release_version=0.1.1", readme)
         self.assertIn('archive="omacalendar-widget-${release_version}-source.tar.gz"', readme)
         self.assertIn("gh attestation verify", readme)
         self.assertIn('--source-ref "refs/tags/v${release_version}"', readme)
@@ -159,7 +160,8 @@ class StaticContractTest(unittest.TestCase):
         self.assertIn("fetches and fast-forwards", readme)
         self.assertIn("`origin HEAD`", readme)
         self.assertIn("release-only `main`", marketplace)
-        self.assertIn("exact commit of signed tag `v0.1.0`", submission)
+        self.assertIn("exact commit of signed tag `v0.1.1`", submission)
+        self.assertIn("listing-level manual installation record", marketplace)
         self.assertIn("git ls-remote --symref origin HEAD", release_guide)
         self.assertIn('refs/tags/${release_tag}^{}', release_guide)
         self.assertIn("release-only install", text("SECURITY.md"))

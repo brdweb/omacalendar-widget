@@ -17,7 +17,7 @@ calendar
 ### Maintainer notes
 
 Requires a separately installed OmaCalendar daemon exposing IPC 2.0 or newer.
-Widget 0.1.0 is qualified with OmaCalendar 1.0.0, but the projects'
+Widget 0.1.1 is qualified with OmaCalendar 1.0.0, but the projects'
 versions and release schedules are independent. The desktop application does
 not need to remain open; systemd user socket activation starts the daemon on
 demand. Install the qualified app's checksummed and attested native package with:
@@ -46,7 +46,7 @@ and provider testing. The widget itself accesses only the user-local
 OmaCalendar socket and does not contact Google or any calendar provider.
 
 Current Omarchy add/update commands follow the repository's remote default
-HEAD. The release-only `main` branch stays at the exact commit of signed tag `v0.1.0`;
+HEAD. The release-only `main` branch stays at the exact commit of signed tag `v0.1.1`;
 development commits are not merged there.
 Users who require an immutable snapshot can use the checksummed,
 GitHub-attested signed-release archive documented in the root README.

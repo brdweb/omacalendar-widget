@@ -14,3 +14,9 @@ gh issue create --repo omacom/omarchy-plugin-marketplace   --title "[Plugin]: Om
 
 Keep the existing listing updated rather than submitting duplicates. Preview
 assets use synthetic events and are checked for metadata and private content.
+
+The marketplace manifest schema has no dependency field. The supported
+machine-readable treatment is a listing-level manual installation record,
+applied by a marketplace maintainer through the `manual-setup` label during
+verification. This makes the directory display the prerequisite warning and
+direct users to the upstream installation instructions.

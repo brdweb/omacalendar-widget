@@ -7,7 +7,7 @@ and follow [Install the required OmaCalendar app](#install-the-required-omacalen
 below before installing this widget. The widget does not include the app or its
 background daemon.
 
-## OmaCalendar widget 0.1.0
+## OmaCalendar widget 0.1.1
 
 `org.omacalendar.widget` is the thin Omarchy Shell companion for OmaCalendar. It
 shows a configurable clock and Up Next summary in the bar, then opens
@@ -58,7 +58,7 @@ are in the app's
 
 ## Install a verified release archive
 
-For `v0.1.0`, the immutable public-install path is the
+For `v0.1.1`, the immutable public-install path is the
 source archive produced from that reviewed signed tag. Download it into an
 empty directory, verify its exact checksum plus both GitHub attestations,
 validate the extracted plugin, and only then place it in Omarchy's user plugin
@@ -66,7 +66,7 @@ directory:
 
 ```bash
 set -euo pipefail
-release_version=0.1.0
+release_version=0.1.1
 archive="omacalendar-widget-${release_version}-source.tar.gz"
 release_url="https://github.com/brdweb/omacalendar-widget/releases/download/v${release_version}"
 curl -fLO "${release_url}/${archive}"

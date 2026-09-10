@@ -18,7 +18,7 @@ Verify the remote default branch and tag after promotion:
 
 ```bash
 git ls-remote --symref origin HEAD
-release_tag=v0.1.0
+release_tag=v0.1.1
 git ls-remote origin "refs/tags/${release_tag}^{}"
 ```
 

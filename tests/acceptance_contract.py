@@ -45,7 +45,7 @@ class AcceptanceContractTest(unittest.TestCase):
 
     def test_pending_record_cannot_release_stable(self) -> None:
         with self.assertRaisesRegex(GATE.GateError, "blocked by acceptance gates"):
-            GATE.verify_record(self.record, "v0.1.0")
+            GATE.verify_record(self.record, "v0.1.1")
 
     def test_each_required_gate_needs_success_and_evidence(self) -> None:
         for key in GATE.REQUIRED_GATES:
@@ -54,13 +54,13 @@ class AcceptanceContractTest(unittest.TestCase):
                 record["gates"][key] = {"status": status, "evidence": evidence}
                 with self.subTest(gate=key, status=status, evidence=evidence):
                     with self.assertRaisesRegex(GATE.GateError, key):
-                        GATE.verify_record(record, "v0.1.0")
+                        GATE.verify_record(record, "v0.1.1")
 
     def test_cannot_omit_a_gate_or_reuse_another_release(self) -> None:
         record = self.completed()
         del record["gates"]["keyboard"]
         with self.assertRaisesRegex(GATE.GateError, "every required gate"):
-            GATE.verify_record(record, "v0.1.0")
+            GATE.verify_record(record, "v0.1.1")
         with self.assertRaisesRegex(GATE.GateError, "stable tag must match"):
             GATE.verify_record(self.completed(), "v0.2.0")
 
@@ -69,8 +69,8 @@ class AcceptanceContractTest(unittest.TestCase):
             record = self.completed()
             record[key] = value
             with self.subTest(field=key), self.assertRaises(GATE.GateError):
-                GATE.verify_record(record, "v0.1.0")
-        self.assertTrue(GATE.verify_record(self.completed(), "v0.1.0"))
+                GATE.verify_record(record, "v0.1.1")
+        self.assertTrue(GATE.verify_record(self.completed(), "v0.1.1"))
 
     def test_runtime_changes_invalidate_old_acceptance(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
