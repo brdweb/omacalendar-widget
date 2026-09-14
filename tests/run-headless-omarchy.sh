@@ -19,6 +19,10 @@ chmod 700 "$runtime_dir"
 export XDG_RUNTIME_DIR="$runtime_dir"
 export WAYLAND_DISPLAY=wayland-1
 export QT_QPA_PLATFORM=wayland
+# The headless compositor uses Pixman; force Qt Quick onto the software path so
+# the suite does not depend on a host Vulkan/DRI device being available.
+export QT_QUICK_BACKEND=software
+export LIBGL_ALWAYS_SOFTWARE=1
 
 weston \
   --backend=headless \
