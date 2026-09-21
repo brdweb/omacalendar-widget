@@ -431,7 +431,7 @@ class StaticContractTest(unittest.TestCase):
         self.assertIn("Model.writableCalendars(calendars)", editor)
         self.assertIn("readonly property var selectedCalendar: readOnly ? sourceCalendar", editor)
         self.assertIn("readonly property bool readOnly:", editor)
-        self.assertIn("if (readOnly) return", editor)
+        self.assertRegex(editor, r"if \(readOnly(?: \|\| busy)?\) return")
         self.assertNotIn("if (event && event.readOnly) root.openEvent(event)", panel)
         self.assertIn('property string defaultCalendarId: ""', editor)
         self.assertIn('event && event.calendarId || defaultCalendarId', editor)

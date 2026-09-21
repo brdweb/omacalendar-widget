@@ -122,7 +122,7 @@ class Fixture:
             return Reply(result={
                 "server": "omacalendard-test",
                 "protocolMajor": major,
-                "protocolMinor": 0,
+                "protocolMinor": 1,
                 "methods": METHODS,
             })
 
@@ -133,6 +133,11 @@ class Fixture:
         if method == "widget.snapshot":
             self.snapshot_number += 1
             params = message.get("params", {})
+
+            if self.scenario == "invalid-snapshot":
+                invalid = snapshot(7)
+                invalid["events"] = [None]
+                return Reply(result=invalid)
 
             if self.scenario == "sync-status":
                 if self.snapshot_number > 1 and "sinceRevision" in params:
@@ -327,7 +332,20 @@ def main() -> None:
                     try:
                         message = json.loads(line)
                         reply = fixture.reply(message)
-                        connection.sendall(response(message.get("id"), reply.result, reply.error))
+                        encoded = response(message.get("id"), reply.result, reply.error)
+                        if scenario == "invalid-response":
+                            connection.sendall(b"null\n")
+                            time.sleep(0.2)
+                            continue
+                        if scenario == "oversized-frame":
+                            connection.sendall(b"x" * (1024 * 1024 + 1))
+                            time.sleep(0.2)
+                            continue
+                        if scenario == "fragmented":
+                            for offset in range(0, len(encoded), 3):
+                                connection.sendall(encoded[offset : offset + 3])
+                        else:
+                            connection.sendall(encoded)
                         if reply.notification is not None:
                             connection.sendall(frame(reply.notification))
                         if reply.close_connection:

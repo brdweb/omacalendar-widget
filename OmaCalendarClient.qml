@@ -11,6 +11,10 @@ Item {
   readonly property int protocolMajor: 2
   readonly property int minimumProtocolMinor: 0
   readonly property int maximumFrameBytes: 1024 * 1024
+  readonly property int maximumPendingRequests: 32
+  readonly property int maximumTitleLength: 1024
+  readonly property int maximumLocationLength: 4096
+  readonly property int maximumNotesLength: 65536
 
   property string socketPath: {
     var runtime = Quickshell.env("XDG_RUNTIME_DIR")
@@ -51,6 +55,7 @@ Item {
   property string undoLabel: ""
   property string activeMutationId: ""
   property string transportFailureDetail: ""
+  property string receiveBuffer: ""
 
   signal snapshotUpdated()
   signal actionSucceeded(string action, var result)
@@ -63,6 +68,124 @@ Item {
   function _setState(next, detail) {
     stateDetail = String(detail || "")
     connectionState = next
+  }
+
+  function _object(value) {
+    return value !== null && typeof value === "object" && !Array.isArray(value)
+  }
+
+  function _pendingCount() {
+    return Object.keys(pending).length
+  }
+
+  function _validId(value) {
+    return typeof value === "string" && value.trim() !== "" && value.length <= 512
+  }
+
+  function _validObjectArray(value, maximum) {
+    if (!Array.isArray(value) || value.length > maximum) return false
+    for (var index = 0; index < value.length; index++)
+      if (!_object(value[index])) return false
+    return true
+  }
+
+  function _validEventDto(event) {
+    if (!_object(event) || !_validId(event.id) || !_validId(event.calendarId)) return false
+    if (String(event.title || "").length > maximumTitleLength
+        || String(event.location || "").length > maximumLocationLength
+        || String(event.notes || "").length > maximumNotesLength)
+      return false
+    if (event.attendees !== undefined && !_validObjectArray(event.attendees, 500)) return false
+    var start = Model.eventStart(event)
+    var end = Model.eventEnd(event)
+    return start !== null && end !== null && end > start
+  }
+
+  function _validateSnapshot(value) {
+    if (!_object(value) || !isFinite(Number(value.revision)) || Number(value.revision) < 0)
+      return false
+    if (!_validObjectArray(value.calendarSets, 100)
+        || !_validObjectArray(value.calendars, 500)
+        || !_validObjectArray(value.events, 1000)
+        || !_validObjectArray(value.invitations, 100)
+        || !_validObjectArray(value.conflicts, 500)
+        || !_validObjectArray(value.operations, 100))
+      return false
+    for (var calendarIndex = 0; calendarIndex < value.calendars.length; calendarIndex++)
+      if (!_validId(value.calendars[calendarIndex].id)) return false
+    for (var eventIndex = 0; eventIndex < value.events.length; eventIndex++)
+      if (!_validEventDto(value.events[eventIndex])) return false
+    for (var keyIndex = 0; keyIndex < 2; keyIndex++) {
+      var key = keyIndex === 0 ? "currentEvent" : "upNext"
+      var event = value[key]
+      if (event !== undefined && event !== null && Object.keys(event).length > 0
+          && !_validEventDto(event)) return false
+    }
+    return true
+  }
+
+  function _validEnum(value, values) {
+    return values.indexOf(String(value || "")) !== -1
+  }
+
+  function _validateDraft(draft) {
+    if (!_object(draft) || !_validId(String(draft.calendarId || "")))
+      return "A valid calendar is required"
+    if (!String(draft.title || "").trim() || String(draft.title).length > maximumTitleLength)
+      return "The event title is missing or too long"
+    if (String(draft.location || "").length > maximumLocationLength
+        || String(draft.notes || "").length > maximumNotesLength)
+      return "The event details are too long"
+    var start = Model.eventStart(draft)
+    var end = Model.eventEnd(draft)
+    if (!start || !end || end <= start) return "The event dates are invalid"
+    return ""
+  }
+
+  function _validatePatch(patch) {
+    if (!_object(patch)) return "The event changes are invalid"
+    if (patch.title !== undefined && String(patch.title).length > maximumTitleLength)
+      return "The event title is too long"
+    if (String(patch.location || "").length > maximumLocationLength
+        || String(patch.notes || "").length > maximumNotesLength)
+      return "The event details are too long"
+    if (patch.start !== undefined || patch.startDate !== undefined
+        || patch.end !== undefined || patch.endDate !== undefined) {
+      var start = Model.eventStart(patch)
+      var end = Model.eventEnd(patch)
+      if (!start || !end || end <= start) return "The event dates are invalid"
+    }
+    return ""
+  }
+
+  function _validateMutation(method, payload) {
+    if (!_object(payload) || !_validId(String(payload.clientMutationId || "")))
+      return "The mutation identifier is invalid"
+    var guestMethods = ["events.create", "events.update", "events.remove", "events.move", "events.respond"]
+    if (guestMethods.indexOf(method) !== -1
+        && !_validEnum(payload.guestNotificationPolicy, ["none", "all", "externalOnly"]))
+      return "The guest notification policy is invalid"
+    if (method.indexOf("events.") === 0 && method !== "events.undo") {
+      if (!_validEnum(payload.recurrenceScope, ["series", "occurrence", "future"]))
+        return "The recurrence scope is invalid"
+      if (method !== "events.create"
+          && (!_object(payload.eventRef) || !_validId(String(payload.eventRef.eventId || ""))))
+        return "The event reference is invalid"
+    }
+    if (method === "events.create") return _validateDraft(payload.draft)
+    if (method === "events.move") return _validateDraft(payload.draft)
+    if (method === "events.update") return _validatePatch(payload.patch)
+    if (method === "events.respond"
+        && !_validEnum(payload.response, ["accepted", "tentative", "declined"]))
+      return "The invitation response is invalid"
+    if (method === "calendarSets.activate" && !_validId(String(payload.calendarSetId || "")))
+      return "The calendar set is invalid"
+    if (method === "operations.retry"
+        && (!isFinite(payload.operationId) || payload.operationId <= 0 || Math.floor(payload.operationId) !== payload.operationId))
+      return "The operation is invalid"
+    if (method === "events.undo" && !_validId(String(payload.undoToken || "")))
+      return "The undo token is invalid"
+    return ""
   }
 
   function connectNow() {
@@ -92,8 +215,28 @@ Item {
       if (callback) callback(null, { code: "daemon_unavailable", message: "OmaCalendar service is unavailable", retryable: true })
       return ""
     }
+    if (_pendingCount() >= maximumPendingRequests) {
+      if (callback) callback(null, { code: "too_many_requests", message: "Too many calendar requests are pending", retryable: true })
+      return ""
+    }
     requestCounter++
     var id = "widget-" + Date.now().toString(36) + "-" + requestCounter
+    var encoded
+    try {
+      encoded = JSON.stringify({
+        id: id,
+        protocolMajor: protocolMajor,
+        method: method,
+        params: params || {}
+      }) + "\n"
+    } catch (error) {
+      if (callback) callback(null, { code: "invalid_request", message: "The calendar request could not be encoded", retryable: false })
+      return ""
+    }
+    if (_utf8Size(encoded) > maximumFrameBytes) {
+      if (callback) callback(null, { code: "request_too_large", message: "The calendar request is too large", retryable: false })
+      return ""
+    }
     var next = {}
     for (var key in pending) next[key] = pending[key]
     next[id] = {
@@ -102,12 +245,7 @@ Item {
       deadline: Date.now() + Number(timeoutMs || 5000)
     }
     pending = next
-    socket.write(JSON.stringify({
-      id: id,
-      protocolMajor: protocolMajor,
-      method: method,
-      params: params || {}
-    }) + "\n")
+    socket.write(encoded)
     socket.flush()
     return id
   }
@@ -163,6 +301,12 @@ Item {
       socket.connected = false
       return
     }
+    if (!_object(message)) {
+      transportFailureDetail = "The daemon sent an invalid response"
+      _setState("error", transportFailureDetail)
+      socket.connected = false
+      return
+    }
     if (message.event) {
       _handleNotification(String(message.event), message.data || {})
       return
@@ -170,6 +314,24 @@ Item {
     var item = _takePending(String(message.id || ""))
     if (!item || !item.callback) return
     item.callback(message.result === undefined ? null : message.result, message.error || null)
+  }
+
+  function _receiveChunk(data) {
+    receiveBuffer += String(data || "")
+    var newline = receiveBuffer.indexOf("\n")
+    while (newline !== -1) {
+      var frame = receiveBuffer.slice(0, newline)
+      receiveBuffer = receiveBuffer.slice(newline + 1)
+      if (frame !== "") _receive(frame)
+      if (!socket.connected) return
+      newline = receiveBuffer.indexOf("\n")
+    }
+    if (_utf8Size(receiveBuffer) > maximumFrameBytes) {
+      transportFailureDetail = "The daemon sent an oversized response"
+      receiveBuffer = ""
+      _setState("error", transportFailureDetail)
+      socket.connected = false
+    }
   }
 
   function _handleNotification(event, data) {
@@ -327,6 +489,11 @@ Item {
         root._finishSnapshotRequest()
         return
       }
+      if (!root._validateSnapshot(result)) {
+        root._snapshotError("The daemon returned an invalid calendar snapshot", requestFull)
+        root._finishSnapshotRequest()
+        return
+      }
       root.snapshot = result
       root.snapshotQueryKey = queryKey
       root.needsBaseline = false
@@ -338,6 +505,13 @@ Item {
   }
 
   function _mutation(method, params, action, callback) {
+    if (activeMutationId !== "") {
+      var busy = "A calendar change is already in progress"
+      lastActionError = busy
+      actionFailed(action, busy)
+      if (callback) callback(null, { code: "mutation_in_progress", message: busy, retryable: true })
+      return
+    }
     if (!supports(method)) {
       var unsupported = "This daemon does not support " + method
       lastActionError = unsupported
@@ -346,10 +520,17 @@ Item {
     }
     var payload = params || {}
     if (!payload.clientMutationId) payload.clientMutationId = Model.clientMutationId()
+    var validationError = _validateMutation(method, payload)
+    if (validationError) {
+      lastActionError = validationError
+      actionFailed(action, validationError)
+      if (callback) callback(null, { code: "invalid_params", message: validationError, retryable: false })
+      return
+    }
     activeMutationId = payload.clientMutationId
     lastActionError = ""
     _request(method, payload, function(result, error) {
-      activeMutationId = ""
+      if (activeMutationId === payload.clientMutationId) activeMutationId = ""
       if (error) {
         lastActionError = String(error.message || "Action failed")
         actionFailed(action, lastActionError)
@@ -482,8 +663,10 @@ Item {
     id: socket
     path: root.socketPath
     parser: SplitParser {
-      splitMarker: "\n"
-      onRead: function(data) { root._receive(data) }
+      // Receive raw chunks so an unterminated peer frame cannot grow inside
+      // SplitParser beyond the widget's own frame limit.
+      splitMarker: ""
+      onRead: function(data) { root._receiveChunk(data) }
     }
     onConnectionStateChanged: {
       if (connected) {
@@ -492,6 +675,7 @@ Item {
         root.forceNextSnapshot = true
         root._negotiate()
       } else {
+        root.receiveBuffer = ""
         root.methods = []
         root.serverInfo = ({})
         root.needsBaseline = true
