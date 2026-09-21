@@ -8,6 +8,7 @@ Item {
   property string scenario: Quickshell.env("OMACALENDAR_TEST_SCENARIO") || "happy"
   property int phase: 0
   property bool sawMissingWithCache: false
+  property bool sawDuplicateRejected: false
 
   function fail(message) {
     console.error("CLIENT_TEST_FAIL [" + scenario + "]: " + message)
@@ -35,6 +36,18 @@ Item {
     target: client
 
     function onConnectionStateChanged() {
+      if (root.scenario === "invalid-response" && client.connectionState === "missing") {
+        if (client.stateDetail.indexOf("invalid response") === -1)
+          root.fail("non-object JSON response was not rejected")
+        else root.pass()
+        return
+      }
+      if (root.scenario === "oversized-frame" && client.connectionState === "missing") {
+        if (client.stateDetail.indexOf("oversized response") === -1)
+          root.fail("oversized unterminated frame did not report its transport failure")
+        else root.pass()
+        return
+      }
       if (root.scenario === "incompatible" && client.connectionState === "incompatible") {
         if (client.stateDetail.indexOf("incompatible") === -1) {
           root.fail("protocol mismatch did not explain the incompatibility")
@@ -53,6 +66,12 @@ Item {
         root.sawMissingWithCache = true
         if (root.scenario === "offline") root.pass()
       }
+    }
+
+    function onStateDetailChanged() {
+      if (root.scenario === "invalid-snapshot"
+          && client.stateDetail.indexOf("invalid calendar snapshot") !== -1)
+        root.pass()
     }
 
     function onSnapshotUpdated() {
@@ -120,6 +139,21 @@ Item {
         return
       }
 
+      if (root.scenario === "duplicate-mutation") {
+        if (root.phase !== 0 || !root.validBaseline(client)) return
+        root.phase = 1
+        var draft = {
+          calendarId: "local",
+          title: "Created once",
+          start: "2026-08-28T15:00:00Z",
+          end: "2026-08-28T16:00:00Z",
+          allDay: false
+        }
+        client.createEvent(draft, "none")
+        client.createEvent(draft, "none")
+        return
+      }
+
       if (root.scenario === "sync-status") {
         if (client.revision !== 7) {
           root.fail("sync-only status changes unexpectedly changed the database revision")
@@ -147,7 +181,7 @@ Item {
         return
       }
 
-      if (root.scenario !== "happy" || root.phase !== 0) return
+      if ((root.scenario !== "happy" && root.scenario !== "fragmented") || root.phase !== 0) return
       if (!root.validBaseline(client)) {
         root.fail("snapshot presentation data was not decoded")
         return
@@ -163,6 +197,11 @@ Item {
     }
 
     function onActionSucceeded(action, result) {
+      if (root.scenario === "duplicate-mutation" && action === "create") {
+        if (!root.sawDuplicateRejected) root.fail("second create was not rejected while the first was pending")
+        else root.pass()
+        return
+      }
       if (root.scenario === "mutation-contract") {
         if (root.phase === 1 && action === "update") {
           root.phase = 2
@@ -201,7 +240,7 @@ Item {
         }
         return
       }
-      if (root.scenario !== "happy") return
+      if (root.scenario !== "happy" && root.scenario !== "fragmented") return
       if (root.phase === 1 && action === "create") {
         root.phase = 2
         client.removeEvent({ id: "event-1", localRevision: 3 }, "series", "none")
@@ -219,6 +258,11 @@ Item {
     }
 
     function onActionFailed(action, message) {
+      if (root.scenario === "duplicate-mutation" && action === "create"
+          && message.indexOf("already in progress") !== -1) {
+        root.sawDuplicateRejected = true
+        return
+      }
       root.fail(action + ": " + message)
     }
   }

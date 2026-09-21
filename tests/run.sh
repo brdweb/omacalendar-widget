@@ -109,7 +109,7 @@ run_client_scenario() {
   printf 'IPC scenario passed: %s\n' "$scenario"
 }
 
-for scenario in happy mutation-contract gap sync-status offline restart incompatible; do
+for scenario in happy fragmented oversized-frame invalid-response mutation-contract duplicate-mutation invalid-snapshot gap sync-status offline restart incompatible; do
   run_client_scenario "$scenario"
 done
 

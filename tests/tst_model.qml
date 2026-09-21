@@ -74,6 +74,24 @@ TestCase {
     compare(Model.eventsForDate(events, "2026-08-29")[0].id, "overnight")
   }
 
+  function test_allDayEndDateIsExclusiveForDateSelection() {
+    var event = { id: "holiday", allDay: true,
+      startDate: "2026-08-28", endDate: "2026-08-30" }
+    compare(Model.eventsForDate([event], "2026-08-28").length, 1)
+    compare(Model.eventsForDate([event], "2026-08-29").length, 1)
+    compare(Model.eventsForDate([event], "2026-08-30").length, 0)
+    var noEnd = { id: "one-day", allDay: true, startDate: "2026-08-28" }
+    compare(Model.eventsForDate([noEnd], "2026-08-28").length, 1)
+    compare(Model.eventsForDate([noEnd], "2026-08-29").length, 0)
+  }
+
+  function test_invalidDateOnlyValuesAreRejected() {
+    verify(Model.parseDate("2026-02-30") === null)
+    verify(Model.parseDate("2026-13-01") === null)
+    verify(Model.parseDate("2025-02-29") === null)
+    compare(Model.dateKey(Model.parseDate("2024-02-29")), "2024-02-29")
+  }
+
   function test_allDayEndDateIsExclusiveForMarks() {
     var marks = Model.eventMarks([
       { allDay: true, startDate: "2026-08-28", endDate: "2026-08-30" }
@@ -99,6 +117,11 @@ TestCase {
     compare(layout[4].dayIndex, 2)
   }
 
+  function test_timelineUsesWallClockMinutes() {
+    compare(Model.wallClockMinutes(new Date(2026, 2, 8, 3, 15, 30)), 195.5)
+    compare(Model.wallClockMinutes(new Date(2026, 10, 1, 2, 45, 0)), 165)
+  }
+
   function test_searchCoversPresentationFields() {
     var events = [
       { title: "Design review", location: "Studio", attendees: [{ email: "person@example.test" }] },
@@ -109,10 +132,20 @@ TestCase {
     compare(Model.filteredEvents(events, "missing").length, 0)
   }
 
+  function test_searchAndColorsIgnoreMalformedDtoEntries() {
+    var events = [null, "bad", { title: "Valid", attendees: [null, "bad", { email: "safe@example.test" }] }]
+    compare(Model.filteredEvents(events, "safe@example").length, 1)
+    compare(Model.filteredEvents(events, "valid").length, 1)
+    compare(Model.calendarColor({ calendarId: "missing" }, [null, "bad", {}], "fallback"), "fallback")
+  }
+
   function test_meetingUrlPrefersPresentationField() {
     compare(Model.meetingUrl({ meetingUrl: "https://meet.example.test/room" }), "https://meet.example.test/room")
     compare(Model.meetingUrl({ description: "Join https://video.example.test/abc)." }), "https://video.example.test/abc")
     compare(Model.meetingUrl({ meetingUrl: "javascript:alert(1)" }), "")
+    compare(Model.meetingUrl({ meetingUrl: "https://user:secret@meet.example.test/room" }), "")
+    compare(Model.meetingUrl({ meetingUrl: "https://meet.example.test/room\nnext" }), "")
+    compare(Model.meetingUrl({ meetingUrl: "https:///missing-host" }), "")
   }
 
   function test_emptySnapshotEventIsNotPresentedAsAnEvent() {
@@ -120,6 +153,17 @@ TestCase {
     verify(!Model.hasEvent({}))
     verify(!Model.hasEvent({ id: "" }))
     verify(Model.hasEvent({ id: "event-1" }))
+  }
+
+  function test_findEventByIdentityReconcilesRecurringOccurrences() {
+    var events = [
+      { id: "series", recurrenceId: "first", title: "Updated first" },
+      { id: "series", recurrenceId: "second", title: "Updated second" }
+    ]
+    compare(Model.findEventByIdentity(events, { id: "series", recurrenceId: "second" }).title,
+      "Updated second")
+    verify(Model.findEventByIdentity(events, { id: "deleted", recurrenceId: "first" }) === null)
+    verify(Model.findEventByIdentity([null, "bad"], { id: "series" }) === null)
   }
 
   function test_upNextLabels() {

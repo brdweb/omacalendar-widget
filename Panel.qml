@@ -211,6 +211,20 @@ Panel {
     })
   }
 
+  function reconcileEditingEvent() {
+    if (!editorVisible || !editingEvent) return
+    var refreshed = Model.findEventByIdentity(allEvents, editingEvent)
+    if (!refreshed) {
+      finishEditing()
+      editingEvent = null
+      return
+    }
+    if (JSON.stringify(refreshed) !== JSON.stringify(editingEvent)) {
+      editingEvent = refreshed
+      Qt.callLater(eventEditor.reset)
+    }
+  }
+
   function cycleRecurrenceScope() {
     var candidate = editorVisible ? editingEvent : selectedEvent
     var movingCalendars = editorVisible && editingEvent
@@ -307,6 +321,7 @@ Panel {
       var active = daemonClient.snapshot.activeCalendarSet
       if (active && active.id) root.selectedCalendarSetId = String(active.id)
       else if (active && typeof active === "string") root.selectedCalendarSetId = String(active)
+      root.reconcileEditingEvent()
       if (root.selectedEventIndex < 0 && root.visibleEvents.length > 0) root.selectedEventIndex = 0
     }
   }
@@ -315,7 +330,7 @@ Panel {
     id: daemonClient
     pollIntervalMs: {
       var seconds = Number(root.setting("refreshSeconds", 60))
-      return Math.max(15, isFinite(seconds) ? seconds : 60) * 1000
+      return Math.min(3600, Math.max(15, isFinite(seconds) ? seconds : 60)) * 1000
     }
     socketPath: {
       var configured = String(root.setting("socketPath", ""))
@@ -744,6 +759,7 @@ Panel {
                 selectedDate: root.selectedDate
                 defaultCalendarId: String(root.snapshot.defaultCalendarId || "")
                 foreground: root.contentForeground
+                busy: daemonClient.activeMutationId !== ""
                 onSelectedCalendarIdChanged: {
                   if (root.editorVisible && root.editingEvent
                       && String(selectedCalendarId || "")

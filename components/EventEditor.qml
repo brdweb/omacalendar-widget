@@ -16,6 +16,10 @@ Item {
   property int calendarIndex: 0
   property bool allDay: false
   property string guestNotificationPolicy: "none"
+  property bool busy: false
+  readonly property int maximumTitleLength: 1024
+  readonly property int maximumLocationLength: 4096
+  readonly property int maximumNotesLength: 65536
 
   signal saveRequested(var draft, string guestPolicy)
   signal cancelRequested()
@@ -142,12 +146,18 @@ Item {
   }
 
   function submit() {
-    if (readOnly) return
+    if (readOnly || busy) return
     var start = parseLocal(startField.text)
     var end = parseLocal(endField.text)
     if (!titleField.text.trim()) {
       validationLabel.text = "A title is required"
       titleField.forceActiveFocus()
+      return
+    }
+    if (titleField.text.length > maximumTitleLength
+        || locationField.text.length > maximumLocationLength
+        || notesField.text.length > maximumNotesLength) {
+      validationLabel.text = "The event details are too long"
       return
     }
     if (!selectedCalendar) {
@@ -214,6 +224,7 @@ Item {
       foreground: root.foreground
       Accessible.name: "Event title"
       readOnly: root.readOnly
+      maximumLength: root.maximumTitleLength
       Keys.onEscapePressed: root.cancelRequested()
     }
 
@@ -224,6 +235,7 @@ Item {
       foreground: root.foreground
       Accessible.name: "Event location"
       readOnly: root.readOnly
+      maximumLength: root.maximumLocationLength
       Keys.onEscapePressed: root.cancelRequested()
     }
 
@@ -234,6 +246,7 @@ Item {
       foreground: root.foreground
       Accessible.name: "Event notes"
       readOnly: root.readOnly
+      maximumLength: root.maximumNotesLength
       Keys.onEscapePressed: root.cancelRequested()
     }
 
@@ -339,7 +352,7 @@ Item {
         foreground: root.foreground
         selected: true
         focusable: true
-        enabled: root.writableCalendars.length > 0
+        enabled: root.writableCalendars.length > 0 && !root.busy
         onClicked: root.submit()
       }
 

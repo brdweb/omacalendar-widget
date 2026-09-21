@@ -12,7 +12,13 @@ function parseDate(value) {
   var raw = String(value || "")
   if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
     var fields = raw.split("-")
-    return new Date(Number(fields[0]), Number(fields[1]) - 1, Number(fields[2]), 12, 0, 0, 0)
+    var year = Number(fields[0])
+    var month = Number(fields[1]) - 1
+    var day = Number(fields[2])
+    var date = new Date(year, month, day, 12, 0, 0, 0)
+    if (date.getFullYear() !== year || date.getMonth() !== month || date.getDate() !== day)
+      return null
+    return date
   }
   var parsed = new Date(raw)
   return isNaN(parsed.getTime()) ? null : parsed
@@ -162,6 +168,13 @@ function occursOn(event, key) {
   var start = eventStart(event)
   var end = eventEnd(event)
   if (!day || !start) return false
+  if (event.allDay) {
+    var selectedKey = dateKey(day)
+    var startKey = dateKey(start)
+    var endKey = dateKey(end)
+    return startKey !== "" && selectedKey >= startKey
+      && (endKey === "" ? selectedKey === startKey : selectedKey < endKey)
+  }
   var dayStart = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, 0, 0, 0)
   var dayEnd = new Date(dayStart.getTime())
   dayEnd.setDate(dayEnd.getDate() + 1)
@@ -224,14 +237,15 @@ function timelineLayout(events, startDate, dayCount) {
       var end = eventEnd(event)
       if (!start) continue
       var dayStart = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, 0, 0, 0)
-      var dayEnd = addDays(dayStart, 1)
-      var clippedStart = Math.max(start.getTime(), dayStart.getTime())
-      var clippedEnd = Math.min(end ? end.getTime() : clippedStart + 1800000, dayEnd.getTime())
+      var dayEnd = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1, 0, 0, 0, 0)
+      var clippedStart = start < dayStart ? 0 : wallClockMinutes(start)
+      var clippedEnd = !end ? Math.min(1440, clippedStart + 30)
+        : end >= dayEnd ? 1440 : wallClockMinutes(end)
+      if (clippedEnd <= clippedStart) clippedEnd = Math.min(1440, clippedStart + 20)
       timed.push({
         event: event,
-        startMinute: (clippedStart - dayStart.getTime()) / 60000,
-        endMinute: Math.max((clippedEnd - dayStart.getTime()) / 60000,
-                            (clippedStart - dayStart.getTime()) / 60000 + 20)
+        startMinute: clippedStart,
+        endMinute: clippedEnd
       })
     }
     timed.sort(function(left, right) {
@@ -273,6 +287,14 @@ function timelineLayout(events, startDate, dayCount) {
     if (cluster.length > 0) finishCluster()
   }
   return result
+}
+
+// The grid is labeled in local wall-clock hours. Elapsed milliseconds since
+// midnight differ on DST transition days, so position by displayed clock time.
+// Repeated fall-back times intentionally overlap in the compact view.
+function wallClockMinutes(date) {
+  if (!(date instanceof Date) || isNaN(date.getTime())) return 0
+  return date.getHours() * 60 + date.getMinutes() + date.getSeconds() / 60
 }
 
 function timeLabel(event, locale) {
@@ -359,13 +381,41 @@ function syncSummary(status) {
   return result
 }
 
+function validatedHttpsUrl(value) {
+  var url = String(value || "")
+  if (!url || url !== url.trim() || /[\u0000-\u0020\u007f\\]/.test(url)) return ""
+  var match = url.match(/^https:\/\/([^\/?#]+)(?:[\/?#].*)?$/i)
+  if (!match || match[1].indexOf("@") !== -1) return ""
+  var authority = match[1]
+  var port = ""
+  if (authority.charAt(0) === "[") {
+    var ipv6 = authority.match(/^\[([0-9a-f:.]+)\](?::(\d{1,5}))?$/i)
+    if (!ipv6) return ""
+    port = ipv6[2] || ""
+  } else {
+    var portMatch = authority.match(/^(.*?)(?::(\d{1,5}))?$/)
+    var host = portMatch ? portMatch[1] : ""
+    port = portMatch ? portMatch[2] || "" : ""
+    if (!/^[a-z0-9.-]+$/i.test(host) || host.charAt(0) === "."
+        || host.charAt(host.length - 1) === "." || host.indexOf("..") !== -1)
+      return ""
+    var labels = host.split(".")
+    for (var index = 0; index < labels.length; index++) {
+      if (!labels[index] || labels[index].charAt(0) === "-"
+          || labels[index].charAt(labels[index].length - 1) === "-") return ""
+    }
+  }
+  if (port && Number(port) > 65535) return ""
+  return url
+}
+
 function meetingUrl(event) {
   if (!event) return ""
-  var direct = String(event.meetingUrl || "")
-  if (/^https:\/\//i.test(direct)) return direct
+  var direct = validatedHttpsUrl(event.meetingUrl)
+  if (direct) return direct
   var haystack = [event.url, event.location, event.description].join(" ")
   var match = haystack.match(/https:\/\/[^\s<>\"]+/i)
-  return match ? match[0].replace(/[),.;]+$/, "") : ""
+  return match ? validatedHttpsUrl(match[0].replace(/[),.;]+$/, "")) : ""
 }
 
 function filteredEvents(events, query) {
@@ -373,8 +423,9 @@ function filteredEvents(events, query) {
   if (!normalized) return Array.isArray(events) ? events.slice(0) : []
   var input = Array.isArray(events) ? events : []
   return input.filter(function(event) {
+    if (!event || typeof event !== "object") return false
     var attendees = Array.isArray(event.attendees) ? event.attendees.map(function(item) {
-      return String(item.name || item.email || "")
+      return item && typeof item === "object" ? String(item.name || item.email || "") : ""
     }).join(" ") : ""
     var text = [event.title, event.summary, event.location, event.notes, event.description, attendees].join(" ").toLowerCase()
     return text.indexOf(normalized) !== -1
@@ -393,11 +444,29 @@ function hasEvent(event) {
   return !!event && typeof event === "object" && String(event.id || "").trim() !== ""
 }
 
+function eventOccurrenceId(event) {
+  return String(event && (event.recurrenceId || event.occurrenceId || event.occurrenceStart) || "")
+}
+
+function findEventByIdentity(events, target) {
+  if (!hasEvent(target)) return null
+  var targetId = String(target.id)
+  var occurrenceId = eventOccurrenceId(target)
+  var input = Array.isArray(events) ? events : []
+  for (var index = 0; index < input.length; index++) {
+    var event = input[index]
+    if (!hasEvent(event) || String(event.id) !== targetId) continue
+    if (eventOccurrenceId(event) === occurrenceId) return event
+  }
+  return null
+}
+
 function calendarColor(event, calendars, fallback) {
   if (event && event.color) return String(event.color)
   var input = Array.isArray(calendars) ? calendars : []
   for (var index = 0; index < input.length; index++) {
-    if (String(input[index].id) === String(event && event.calendarId || ""))
+    if (input[index] && typeof input[index] === "object"
+        && String(input[index].id) === String(event && event.calendarId || ""))
       return String(input[index].color || fallback)
   }
   return fallback
