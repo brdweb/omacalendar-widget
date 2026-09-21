@@ -2,7 +2,7 @@
   "stableVersion": "0.1.2",
   "candidateVersion": "0.1.2",
   "candidateOmaCalendarVersion": "1.1.0",
-  "evidenceCommit": "c61dd18a7e63ae9cd2a92698035b69b709b39a09",
+  "evidenceCommit": "e958f118b086b12c6fd66a4b4a97ad3939d7d377",
   "acceptedBy": "brdweb (release maintainer)",
   "acceptedAt": "2026-09-21T14:22:37+00:00",
   "gates": {
