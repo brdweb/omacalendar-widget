@@ -1,7 +1,7 @@
 # Release validation
 
-The maintainer approved stable publication on 2026-09-09 after desktop testing
-and correction of reported issues. Automated coverage includes IPC reconnect,
+The maintainer approved stable publication of 0.1.2 on 2026-09-21 after installing
+and running the candidate on a current Omarchy laptop. Automated coverage includes IPC reconnect,
 offline cache, mutations, keyboard actions, agenda positioning, default calendar,
 read-only details and layout at 100%, 125% and 200% scale.
 

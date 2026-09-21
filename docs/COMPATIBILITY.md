@@ -2,6 +2,7 @@
 
 | Widget version | OmaCalendar app version | IPC major | Status |
 |---|---|---:|---|
+| `0.1.2` | `1.1.0` | 2 | Stable |
 | `0.1.1` | `1.0.0` | 2 | Stable |
 | `0.1.0` | `1.0.0` | 2 | Stable |
 

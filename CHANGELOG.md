@@ -6,6 +6,27 @@ begin.
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-09-21
+
+### Added
+
+- Validate and bound daemon snapshots, transport frames, pending requests, and
+  mutation/editor payloads at the widget trust boundary.
+- Exercise IPC 2.1, fragmented input, oversized and malformed responses,
+  duplicate mutations, and invalid snapshots in runtime fixtures.
+
+### Changed
+
+- Qualify the widget with OmaCalendar 1.1.0 while retaining IPC 2.0 compatibility.
+- Reconcile an open editor with authoritative snapshot replacements and prevent
+  duplicate event mutations while another change is pending.
+
+### Fixed
+
+- Treat all-day end dates as exclusive without extending events that omit an end.
+- Position day and week events by local wall-clock time across DST transitions.
+- Reject normalized invalid dates and unsafe or malformed HTTPS meeting links.
+
 ## [0.1.1] - 2026-09-09
 
 ### Changed
@@ -177,7 +198,8 @@ verification failed. The signed RC1 tag remains immutable; use RC2 for testing.
 - Kept inline event creation and editing while removing invitation and reminder
   controls from the compact detail area.
 
-[Unreleased]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-rc.3...HEAD
+[Unreleased]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.1...v0.1.2
 [0.1.0-rc.3]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-rc.2...v0.1.0-rc.3
 [0.1.0-rc.2]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-rc.1...v0.1.0-rc.2
 [0.1.0-rc.1]: https://github.com/brdweb/omacalendar-widget/compare/v0.1.0-beta.1...v0.1.0-rc.1

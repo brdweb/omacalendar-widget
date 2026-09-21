@@ -2,12 +2,12 @@
 
 **Requires the full [OmaCalendar app](https://github.com/brdweb/omacalendar),
 installed separately.** Get the app from the
-[OmaCalendar downloads page](https://github.com/brdweb/omacalendar/releases/tag/v1.0.0)
+[OmaCalendar downloads page](https://github.com/brdweb/omacalendar/releases/tag/v1.1.0)
 and follow [Install the required OmaCalendar app](#install-the-required-omacalendar-app)
 below before installing this widget. The widget does not include the app or its
 background daemon.
 
-## OmaCalendar widget 0.1.1
+## OmaCalendar widget 0.1.2
 
 `org.omacalendar.widget` is the thin Omarchy Shell companion for OmaCalendar. It
 shows a configurable clock and Up Next summary in the bar, then opens
@@ -17,7 +17,7 @@ conflict resolution, and durable writes remain owned by `omacalendard`.
 
 ![OmaCalendar widget showing a month calendar and agenda populated with synthetic events](preview.png)
 
-The widget is released independently and is compatible with OmaCalendar 1.0.0 over IPC 2.
+The widget is released independently and is qualified with OmaCalendar 1.1.0 over IPC 2.1.
 
 ## Requirements
 
@@ -31,14 +31,14 @@ daemon through socket activation and reads its local cache.
 
 ## Install the required OmaCalendar app
 
-The widget is qualified against the published OmaCalendar `1.0.0` app.
+The widget is qualified against the published OmaCalendar `1.1.0` app.
 Download its checksummed, attested native Arch package, install it, and enable
 the on-demand daemon socket before installing the widget:
 
 ```bash
 set -euo pipefail
-app_version=1.0.0
-package="omacalendar-1.0.0-1-x86_64.pkg.tar.zst"
+app_version=1.1.0
+package="omacalendar-1.1.0-1-x86_64.pkg.tar.zst"
 release_url="https://github.com/brdweb/omacalendar/releases/download/v${app_version}"
 curl -fLO "${release_url}/${package}"
 curl -fLO "${release_url}/SHA256SUMS"
@@ -58,7 +58,7 @@ are in the app's
 
 ## Install a verified release archive
 
-For `v0.1.1`, the immutable public-install path is the
+For `v0.1.2`, the immutable public-install path is the
 source archive produced from that reviewed signed tag. Download it into an
 empty directory, verify its exact checksum plus both GitHub attestations,
 validate the extracted plugin, and only then place it in Omarchy's user plugin
@@ -66,7 +66,7 @@ directory:
 
 ```bash
 set -euo pipefail
-release_version=0.1.1
+release_version=0.1.2
 archive="omacalendar-widget-${release_version}-source.tar.gz"
 release_url="https://github.com/brdweb/omacalendar-widget/releases/download/v${release_version}"
 curl -fLO "${release_url}/${archive}"
