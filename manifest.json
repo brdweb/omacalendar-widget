@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "org.omacalendar.widget",
   "name": "OmaCalendar",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "OmaCalendar contributors",
   "description": "Requires the separately installed OmaCalendar app. Adds calendar, agenda, and Up Next controls backed by its local daemon.",
   "license": "MIT",

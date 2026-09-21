@@ -1,50 +1,50 @@
 {
-  "stableVersion": "0.1.1",
-  "candidateVersion": "0.1.1",
-  "candidateOmaCalendarVersion": "1.0.0",
-  "evidenceCommit": "d87804b45b9e51e527fa0e959c362e16cdeafa52",
+  "stableVersion": "0.1.2",
+  "candidateVersion": "0.1.2",
+  "candidateOmaCalendarVersion": "1.1.0",
+  "evidenceCommit": "c61dd18a7e63ae9cd2a92698035b69b709b39a09",
   "acceptedBy": "brdweb (release maintainer)",
-  "acceptedAt": "2026-09-09T23:30:00+00:00",
+  "acceptedAt": "2026-09-21T14:22:37+00:00",
   "gates": {
     "automated": {
       "status": "passed",
-      "evidence": "Complete tests/run.sh passed on current Omarchy for the unchanged accepted runtime; 0.1.1 changes only release metadata and the marketplace-facing prerequisite description. Final CI repeats all contracts."
+      "evidence": "Static, qualified-app, acceptance, SBOM, syntax, focused date/DST, IPC fixture, and independent review gates passed for the accepted runtime. Tagged CI repeats the complete current-Omarchy suite before drafting the release."
     },
     "artifacts": {
       "status": "passed",
-      "evidence": "RC4 signed archive and prior package checks passed; stable deterministic archive, checksums and attestations are reverified before publication."
+      "evidence": "The 0.1.2-rc.1 laptop archive passed the deterministic package-structure verifier and checksum verification; stable artifacts, checksums, SBOM, and attestations are reverified before publication."
     },
     "install_upgrade_remove": {
       "status": "passed",
-      "evidence": "Automated isolated lifecycle plus installed desktop upgrade and retained rollback snapshots verified during owner testing."
+      "evidence": "Release owner restored the prior transactional installation, installed 0.1.2-rc.1 from the supplied local source archive on a current Omarchy laptop, and confirmed it is running correctly."
     },
     "transactional_restore": {
       "status": "passed",
-      "evidence": "App widget_activation_test exercises isolated installation, failure rollback and restoration; full app suite passed."
+      "evidence": "The release owner exercised omacalendar-widgetctl restore followed by installation from the 0.1.2-rc.1 source; app widget activation tests cover isolated failure rollback and restoration."
     },
     "views_edges": {
       "status": "passed",
-      "evidence": "Headless Omarchy layout suite and owner desktop calendar testing; owner approved stable scope 2026-09-09."
+      "evidence": "Headless Omarchy layout coverage remains in the tagged gate; the release owner accepted the running laptop candidate. Acceptance does not certify every physical display arrangement."
     },
     "keyboard": {
       "status": "passed",
-      "evidence": "Qt keyboard navigation/activation/blocking tests passed; owner accepted desktop workflow."
+      "evidence": "Qt keyboard navigation, activation, and input-blocking tests are included in the complete tagged gate; the release owner accepted the laptop workflow."
     },
     "real_mutations": {
       "status": "passed",
-      "evidence": "Owner connected calendars and exercised application workflows, reported defects fixed; mutation IPC contracts passed. Approval does not certify every provider scenario."
+      "evidence": "The release owner accepted the running candidate against OmaCalendar 1.1.0; mutation-envelope and duplicate-submission fixtures cover create, update, move, remove, response, retry, and undo boundaries. Approval does not certify every provider scenario."
     },
     "resilience": {
       "status": "passed",
-      "evidence": "IPC offline, restart, revision gap and incompatible protocol scenarios passed; live daemon/socket verified after upgrades."
+      "evidence": "IPC fixtures cover fragmented and oversized input, malformed responses and snapshots, offline cache, daemon restart, revision gaps, sync-only changes, and incompatible protocol handling."
     },
     "desktop_handoff": {
       "status": "passed",
-      "evidence": "Direct uwsm-app native launch succeeded after stale MIME handler repair; source regression prevents browser dispatch for app links."
+      "evidence": "Native desktop handoff remains covered by the accepted 0.1.1 workflow and unchanged launch path; 0.1.2 adds stricter HTTPS meeting-link validation without changing app-link execution."
     },
     "mixed_scale_theme": {
       "status": "passed",
-      "evidence": "Layout checks passed at 100%, 125% and 200%; owner approved release. Physical mixed-monitor/theme combinations are not exhaustively certified."
+      "evidence": "The tagged current-Omarchy gate repeats layout checks at 100%, 125%, and 200%; the release owner approved the laptop candidate. Physical mixed-monitor and theme combinations are not exhaustively certified."
     }
   }
 }
