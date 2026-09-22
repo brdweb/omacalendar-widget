@@ -84,6 +84,18 @@ Item {
         return
       }
 
+      if (root.scenario === "all-day-single-day") {
+        var gameEvent = client.snapshot.events.find(function(event) {
+          return event.id === "game-1"
+        })
+        if (!gameEvent) {
+          root.fail("single-day all-day event was dropped from the snapshot")
+        } else {
+          root.pass()
+        }
+        return
+      }
+
       if (root.scenario === "gap") {
         if (client.revision === 7 && root.phase === 0) {
           if (!root.validBaseline(client)) root.fail("gap baseline was invalid")

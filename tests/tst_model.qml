@@ -85,6 +85,17 @@ TestCase {
     compare(Model.eventsForDate([noEnd], "2026-08-29").length, 0)
   }
 
+  function test_allDayEqualStartAndEndDateIsOneDay() {
+    // Some subscribed sources (e.g. a sports schedule feed) report a
+    // single-day all-day event with startDate === endDate instead of this
+    // app's own exclusive next-day endDate. It must still resolve to one day.
+    var event = { id: "game", allDay: true,
+      startDate: "2026-09-26", endDate: "2026-09-26" }
+    compare(Model.eventsForDate([event], "2026-09-26").length, 1)
+    compare(Model.eventsForDate([event], "2026-09-25").length, 0)
+    compare(Model.eventsForDate([event], "2026-09-27").length, 0)
+  }
+
   function test_invalidDateOnlyValuesAreRejected() {
     verify(Model.parseDate("2026-02-30") === null)
     verify(Model.parseDate("2026-13-01") === null)

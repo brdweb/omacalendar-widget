@@ -139,6 +139,23 @@ class Fixture:
                 invalid["events"] = [None]
                 return Reply(result=invalid)
 
+            if self.scenario == "all-day-single-day":
+                # A real subscribed feed (a sports schedule) reports a
+                # single-day all-day event with startDate == endDate instead
+                # of this app's usual exclusive next-day endDate. The client
+                # must accept the snapshot rather than reject it wholesale.
+                with_all_day = snapshot(7)
+                with_all_day["events"].append({
+                    "id": "game-1",
+                    "localRevision": 7,
+                    "calendarId": "local",
+                    "title": "Same-day game",
+                    "allDay": True,
+                    "startDate": "2026-09-26",
+                    "endDate": "2026-09-26",
+                })
+                return Reply(result=with_all_day)
+
             if self.scenario == "sync-status":
                 if self.snapshot_number > 1 and "sinceRevision" in params:
                     return Reply(error={

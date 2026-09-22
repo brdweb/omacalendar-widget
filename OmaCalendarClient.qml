@@ -98,7 +98,12 @@ Item {
     if (event.attendees !== undefined && !_validObjectArray(event.attendees, 500)) return false
     var start = Model.eventStart(event)
     var end = Model.eventEnd(event)
-    return start !== null && end !== null && end > start
+    if (start === null || end === null) return false
+    // Some subscribed all-day sources (e.g. sports schedule feeds) report a
+    // single-day event with startDate === endDate instead of the exclusive
+    // next-day endDate this app's own calendars use elsewhere. Treat that as
+    // a valid one-day event rather than rejecting the whole snapshot over it.
+    return event.allDay ? end >= start : end > start
   }
 
   function _validateSnapshot(value) {

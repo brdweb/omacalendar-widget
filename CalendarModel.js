@@ -172,6 +172,9 @@ function occursOn(event, key) {
     var selectedKey = dateKey(day)
     var startKey = dateKey(start)
     var endKey = dateKey(end)
+    // A missing, equal, or otherwise non-exclusive endKey means a one-day
+    // event. Mirrors the normalization eventMarks() already applies below.
+    if (endKey !== "" && endKey <= startKey) endKey = ""
     return startKey !== "" && selectedKey >= startKey
       && (endKey === "" ? selectedKey === startKey : selectedKey < endKey)
   }
