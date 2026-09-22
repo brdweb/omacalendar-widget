@@ -1,9 +1,9 @@
 {
-  "widgetVersion": "0.1.2",
+  "widgetVersion": "0.1.3",
   "testedOmaCalendarVersion": "1.1.0",
   "omacalendarProtocolMajor": 2,
   "minimumOmaCalendarProtocolMinor": 0,
   "releaseChannel": "stable",
   "trustedInstallBranch": "main",
-  "trustedInstallTag": "v0.1.2"
+  "trustedInstallTag": "v0.1.3"
 }

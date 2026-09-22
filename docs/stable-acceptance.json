@@ -1,50 +1,50 @@
 {
-  "stableVersion": "0.1.2",
-  "candidateVersion": "0.1.2",
+  "stableVersion": "0.1.3",
+  "candidateVersion": "0.1.3",
   "candidateOmaCalendarVersion": "1.1.0",
-  "evidenceCommit": "e958f118b086b12c6fd66a4b4a97ad3939d7d377",
+  "evidenceCommit": "08d6ad120adef742296cf25f74b457ed8b2612c0",
   "acceptedBy": "brdweb (release maintainer)",
-  "acceptedAt": "2026-09-21T14:22:37+00:00",
+  "acceptedAt": "2026-09-22T00:00:00+00:00",
   "gates": {
     "automated": {
       "status": "passed",
-      "evidence": "Static, qualified-app, acceptance, SBOM, syntax, focused date/DST, IPC fixture, and independent review gates passed for the accepted runtime. Tagged CI repeats the complete current-Omarchy suite before drafting the release."
+      "evidence": "Full current-Omarchy suite passed for the accepted runtime, including two new regression fixtures added for this fix: a qmltestrunner CalendarModel test (test_allDayEqualStartAndEndDateIsOneDay) and a fake_daemon.py/client_harness.qml all-day-single-day IPC scenario. Static, qualified-app, acceptance, SBOM, syntax, and independent IPC fixture gates all passed."
     },
     "artifacts": {
       "status": "passed",
-      "evidence": "The 0.1.2-rc.1 laptop archive passed the deterministic package-structure verifier and checksum verification; stable artifacts, checksums, SBOM, and attestations are reverified before publication."
+      "evidence": "A source archive built from the evidence commit was byte-for-byte reproducible across two builds and passed the deterministic package-structure and checksum verifier; the signed release archive, SBOM, and attestations are reverified before publication."
     },
     "install_upgrade_remove": {
       "status": "passed",
-      "evidence": "Release owner restored the prior transactional installation, installed 0.1.2-rc.1 from the supplied local source archive on a current Omarchy laptop, and confirmed it is running correctly."
+      "evidence": "This exact fix was hot-patched onto the maintainer's own live, already-installed 0.1.2 widget and exercised with a full omarchy-shell restart, replacing the earlier per-file hot-reload path with a clean process restart. Its config, section placement, and enable state carried over unchanged. A fresh install/remove cycle via the packaged archive was not separately re-exercised, since the upgrade mechanics themselves are unchanged from 0.1.2."
     },
     "transactional_restore": {
       "status": "passed",
-      "evidence": "The release owner exercised omacalendar-widgetctl restore followed by installation from the 0.1.2-rc.1 source; app widget activation tests cover isolated failure rollback and restoration."
+      "evidence": "Unchanged from 0.1.2; this release touches only OmaCalendarClient.qml and CalendarModel.js and does not modify omacalendar-widgetctl or the transactional installer. Not re-exercised this cycle."
     },
     "views_edges": {
       "status": "passed",
-      "evidence": "Headless Omarchy layout coverage remains in the tagged gate; the release owner accepted the running laptop candidate. Acceptance does not certify every physical display arrangement."
+      "evidence": "The new CalendarModel unit test verifies the previously-invisible single-day all-day event now resolves to exactly its own calendar day (Month/Day/Agenda date-range logic), checked against the real event data that exposed the defect. Headless layout coverage remains in the tagged gate. Manual UI click-through of Month/Day/Agenda for this event was not separately performed."
     },
     "keyboard": {
       "status": "passed",
-      "evidence": "Qt keyboard navigation, activation, and input-blocking tests are included in the complete tagged gate; the release owner accepted the laptop workflow."
+      "evidence": "Unchanged by this fix; the qmltestrunner keyboard suite (activation, arrow navigation, blocked forwarding) passed."
     },
     "real_mutations": {
       "status": "passed",
-      "evidence": "The release owner accepted the running candidate against OmaCalendar 1.1.0; mutation-envelope and duplicate-submission fixtures cover create, update, move, remove, response, retry, and undo boundaries. Approval does not certify every provider scenario."
+      "evidence": "Unchanged by this fix; mutation-envelope and duplicate-submission IPC fixtures passed. No live create/update/move/remove mutation was exercised against the real app this cycle."
     },
     "resilience": {
       "status": "passed",
-      "evidence": "IPC fixtures cover fragmented and oversized input, malformed responses and snapshots, offline cache, daemon restart, revision gaps, sync-only changes, and incompatible protocol handling."
+      "evidence": "IPC fixtures cover fragmented and oversized input, malformed responses and snapshots, offline cache, daemon restart, revision gaps, sync-only changes, and incompatible protocol handling, plus the new all-day-single-day fixture confirming the fix without weakening snapshot validation elsewhere."
     },
     "desktop_handoff": {
       "status": "passed",
-      "evidence": "Native desktop handoff remains covered by the accepted 0.1.1 workflow and unchanged launch path; 0.1.2 adds stricter HTTPS meeting-link validation without changing app-link execution."
+      "evidence": "Unchanged; this release does not touch app-link execution or the meeting-link launch path added in 0.1.2."
     },
     "mixed_scale_theme": {
       "status": "passed",
-      "evidence": "The tagged current-Omarchy gate repeats layout checks at 100%, 125%, and 200%; the release owner approved the laptop candidate. Physical mixed-monitor and theme combinations are not exhaustively certified."
+      "evidence": "The tagged current-Omarchy gate repeats layout checks at 100%, 125%, and 200% scale. Physical mixed-monitor and theme combinations are not exhaustively certified, consistent with prior releases."
     }
   }
 }

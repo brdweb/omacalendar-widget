@@ -6,6 +6,18 @@ begin.
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-09-22
+
+### Fixed
+
+- Accept a single-day all-day event whose source reports an inclusive
+  `startDate`/`endDate` (equal dates) instead of this app's usual exclusive
+  next-day end date, rather than rejecting the entire calendar snapshot over
+  one record.
+- Resolve a single-day all-day event to its own calendar day in the Month,
+  Day, and Agenda views; it previously matched no day under the exclusive-end
+  date range check.
+
 ## [0.1.2] - 2026-09-21
 
 ### Added
