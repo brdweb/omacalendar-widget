@@ -6,3 +6,6 @@ artifacts/
 stage/
 __pycache__/
 *.py[cod]
+
+# Local Hermes workspace state
+.hermes/
