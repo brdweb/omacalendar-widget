@@ -82,7 +82,6 @@ ShellRoot {
           root.fail("an IPC 2.2 daemon did not enable the Tasks view")
           return
         }
-        target.open()
         target.setViewMode("tasks")
         if (target.viewMode !== "tasks") {
           root.fail("the Tasks view did not open")

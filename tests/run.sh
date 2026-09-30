@@ -151,7 +151,16 @@ if [[ $event_details_status -ne 0 ]] || ! grep -q "EVENT_DETAILS_TEST_PASS" <<<"
 fi
 echo "Read-only event details smoke passed"
 
-tasks_socket="$test_root/tasks-panel.sock"
+# The panel's client connects before BarWidget passes it the socketPath
+# setting, and Quickshell 0.3.1 does not retry a failed first connection. Give
+# the harness its own runtime directory whose default daemon socket is the
+# fixture, which also keeps it away from any real daemon.
+panel_runtime="$test_root/panel-runtime"
+mkdir -p "$panel_runtime/omacalendar"
+chmod 700 "$panel_runtime"
+panel_wayland_display=${WAYLAND_DISPLAY:-wayland-0}
+[[ $panel_wayland_display == /* ]] || panel_wayland_display="$XDG_RUNTIME_DIR/$panel_wayland_display"
+tasks_socket="$panel_runtime/omacalendar/daemon.sock"
 python3 "$plugin_dir/tests/fake_daemon.py" "$tasks_socket" tasks &
 fake_pid=$!
 for _attempt in $(seq 1 100); do
@@ -161,6 +170,8 @@ done
 [[ -S $tasks_socket ]]
 set +e
 tasks_panel_output=$(timeout 15s env \
+  XDG_RUNTIME_DIR="$panel_runtime" \
+  WAYLAND_DISPLAY="$panel_wayland_display" \
   OMACALENDAR_TEST_SOCKET="$tasks_socket" \
   OMACALENDAR_WIDGET_ENTRY="file://$plugin_dir/tests/tasks_panel_harness.qml" \
   quickshell --no-color --path "$test_root/shell.qml" 2>&1)
