@@ -93,6 +93,40 @@ METHODS = [
     "reminders.dismiss",
 ]
 
+# Added in IPC 2.2. The ipc-2-1 scenario leaves them out, as an older daemon does.
+TASK_METHODS = [
+    "taskLists.list",
+    "tasks.list",
+    "tasks.create",
+    "tasks.update",
+]
+
+TASK_LISTS = [
+    {"id": "local-tasks", "name": "Tasks", "color": "#7aa2f7", "readOnly": False, "enabled": True},
+    {"id": "shared", "name": "Shared", "color": "#9ece6a", "readOnly": True, "enabled": True},
+    {"id": "hidden", "name": "Hidden", "color": "#f7768e", "readOnly": False, "enabled": False},
+]
+
+
+def fixture_task(task_id: str, list_id: str, title: str, due: str, revision: int) -> dict[str, Any]:
+    return {
+        "id": task_id,
+        "listId": list_id,
+        "title": title,
+        "notes": "",
+        "dueDate": due,
+        "dueUtc": "",
+        "completed": False,
+        "completedAt": "",
+        "priority": 0,
+        "parentId": "",
+        "position": "",
+        "dirty": False,
+        "localRevision": revision,
+        "createdAt": "2026-08-20T12:00:00Z",
+        "updatedAt": "2026-08-20T12:00:00Z",
+    }
+
 
 @dataclass
 class Reply:
@@ -107,6 +141,13 @@ class Fixture:
         self.scenario = scenario
         self.connection_number = 0
         self.snapshot_number = 0
+        self.subscribed_to_tasks = False
+        self.tasks = [
+            fixture_task("task-overdue", "local-tasks", "Overdue fixture", "2026-08-20", 3),
+            fixture_task("task-shared", "shared", "Shared fixture", "2026-08-28", 1),
+            fixture_task("task-undated", "local-tasks", "Undated fixture", "", 1),
+            fixture_task("task-hidden", "hidden", "Hidden fixture", "2026-08-28", 1),
+        ]
 
     def reply(self, message: dict[str, Any]) -> Reply:
         if message.get("protocolMajor") != 2:
@@ -119,14 +160,19 @@ class Fixture:
         method = message.get("method")
         if method == "system.info":
             major = 3 if self.scenario == "incompatible" else 2
+            legacy = self.scenario == "ipc-2-1"
             return Reply(result={
                 "server": "omacalendard-test",
                 "protocolMajor": major,
-                "protocolMinor": 1,
-                "methods": METHODS,
+                "protocolMinor": 1 if legacy else 2,
+                "methods": METHODS if legacy else METHODS + TASK_METHODS,
             })
 
         if method == "system.subscribe":
+            topics = message.get("params", {}).get("topics", [])
+            if self.scenario == "ipc-2-1" and "tasks" in topics:
+                return self._invalid("unknown subscription topic: tasks")
+            self.subscribed_to_tasks = "tasks" in topics
             revision = 9 if self.scenario == "restart" and self.connection_number > 1 else 7
             return Reply(result={"subscribed": True, "revision": revision})
 
@@ -286,6 +332,62 @@ class Fixture:
         if method == "events.undo":
             return Reply(result={"restored": True})
 
+        if method in TASK_METHODS and self.scenario == "ipc-2-1":
+            return Reply(error={
+                "code": "method_not_found",
+                "message": "Unknown method",
+                "retryable": False,
+            })
+
+        if method == "taskLists.list":
+            return Reply(result={"lists": TASK_LISTS})
+
+        if method == "tasks.list":
+            params = message.get("params", {})
+            if params.get("includeCompleted") is not False:
+                return self._invalid("the widget should only read open tasks")
+            if self.scenario == "tasks" and not self.subscribed_to_tasks:
+                # Without the subscription the widget would miss task changes.
+                return self._invalid("the widget did not subscribe to tasks")
+            offset = params.get("offset", 0)
+            limit = params.get("limit", 2000)
+            if self.scenario == "tasks":
+                # Two-task pages exercise the widget's paging.
+                limit = min(limit, 2)
+            page = self.tasks[offset : offset + limit]
+            return Reply(result={
+                "tasks": page,
+                "offset": offset,
+                "hasMore": offset + len(page) < len(self.tasks),
+                "nextOffset": offset + len(page),
+            })
+
+        if method == "tasks.update":
+            params = message.get("params", {})
+            task = params.get("task", {})
+            if self.scenario == "tasks" and (
+                "clientMutationId" in params
+                or task != {"id": "task-overdue", "completed": True}
+                or params.get("expectedLocalRevision") != 3
+            ):
+                return self._invalid("task completion envelope was malformed")
+            self.tasks = [item for item in self.tasks if item["id"] != task.get("id")]
+            return Reply(
+                result={"id": task.get("id"), "completed": True},
+                notification={"event": "tasks.changed", "data": {"listIds": ["local-tasks"], "revision": 8}},
+            )
+
+        if method == "tasks.create":
+            task = message.get("params", {}).get("task", {})
+            if self.scenario == "tasks" and task != {"title": "Created task", "listId": "local-tasks"}:
+                return self._invalid("task creation envelope was malformed")
+            created = fixture_task("task-created", task.get("listId", ""), task.get("title", ""), "", 1)
+            self.tasks.append(created)
+            return Reply(
+                result=created,
+                notification={"event": "tasks.changed", "data": {"listIds": ["local-tasks"], "revision": 9}},
+            )
+
         return Reply(error={
             "code": "method_not_found",
             "message": "Unknown method",
@@ -308,6 +410,16 @@ class Fixture:
         ):
             raise ValueError("recurring mutation did not use the IPC recurrence contract")
         return None
+
+
+def read_lines(stream: Any) -> Any:
+    """Yield request lines until the client disconnects, even abruptly."""
+    try:
+        yield from stream
+    except ConnectionResetError:
+        # A client may quit with requests still in flight; that ends the
+        # connection like an orderly close.
+        return
 
 
 def bind_server(socket_path: str) -> socket.socket:
@@ -345,7 +457,7 @@ def main() -> None:
         close_connection = False
         with connection:
             with connection.makefile("rb") as stream:
-                for line in stream:
+                for line in read_lines(stream):
                     try:
                         message = json.loads(line)
                         reply = fixture.reply(message)

@@ -39,6 +39,7 @@ Panel {
   property int agendaAnchorRevision: 0
   property string recurrenceScope: "series"
   property string guestNotificationPolicy: "none"
+  property int selectedTaskIndex: -1
 
   readonly property var snapshot: daemonClient.snapshot || ({})
   readonly property var calendars: Array.isArray(snapshot.calendars) ? snapshot.calendars : []
@@ -73,6 +74,26 @@ Panel {
   }
   readonly property int agendaAnchorIndex: Model.agendaAnchorIndex(agendaViewEvents, selectedDate)
 
+  readonly property string todayKey: Model.dateKey(today)
+  readonly property bool tasksAvailable: daemonClient.tasksSupported || daemonClient.taskLists.length > 0
+  readonly property var taskRows: Model.taskRows(daemonClient.tasks, daemonClient.taskLists, todayKey)
+  readonly property var openTasks: taskRows
+    .filter(function(row) { return row.kind === "task" })
+    .map(function(row) { return row.task })
+  readonly property var selectedTask: selectedTaskIndex >= 0 && selectedTaskIndex < openTasks.length
+    ? openTasks[selectedTaskIndex] : null
+  readonly property int dueTaskCount: Model.dueTaskCount(daemonClient.tasks, daemonClient.taskLists, todayKey)
+  readonly property string newTaskListId: Model.defaultTaskListId(daemonClient.taskLists)
+  readonly property string newTaskListName: {
+    for (var index = 0; index < daemonClient.taskLists.length; index++) {
+      if (String(daemonClient.taskLists[index].id) === newTaskListId)
+        return String(daemonClient.taskLists[index].name || "Tasks")
+    }
+    return "Tasks"
+  }
+  readonly property bool canAddTask: daemonClient.connectionState === "ready"
+    && daemonClient.supports("tasks.create") && newTaskListId !== ""
+
   readonly property string selectedCalendarName: {
     if (!selectedCalendarId) return "All Calendars"
     for (var index = 0; index < selectableCalendars.length; index++) {
@@ -97,6 +118,7 @@ Panel {
     root.searching = false
     root.searchQuery = ""
     searchTimer.stop()
+    taskField.text = ""
     root.controller.hide()
   }
 
@@ -144,6 +166,7 @@ Panel {
   }
 
   function moveMonth(delta) {
+    if (viewMode === "tasks") return
     var next = Model.stepMonth(viewYear, viewMonth, delta)
     viewYear = next.year
     viewMonth = next.month
@@ -167,6 +190,14 @@ Panel {
 
   function setViewMode(mode) {
     var next = String(mode || "month")
+    if (next === "tasks") {
+      if (!tasksAvailable) return
+      viewMode = next
+      editorVisible = false
+      if (selectedTaskIndex < 0 && openTasks.length > 0) selectedTaskIndex = 0
+      daemonClient.refreshTasks()
+      return
+    }
     if (next === "agenda" && viewMode !== "agenda") {
       selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 12, 0, 0, 0)
       viewYear = selectedDate.getFullYear()
@@ -179,6 +210,13 @@ Panel {
   }
 
   function moveCursor(dx, dy) {
+    if (viewMode === "tasks") {
+      if (dy !== 0 && openTasks.length > 0) {
+        selectedTaskIndex = Math.max(0, Math.min(openTasks.length - 1,
+          (selectedTaskIndex < 0 ? 0 : selectedTaskIndex) + dy))
+      }
+      return
+    }
     if (dx !== 0) {
       selectDate(Model.addDays(selectedDate, dx))
       return
@@ -190,6 +228,10 @@ Panel {
   }
 
   function beginCreate() {
+    if (viewMode === "tasks") {
+      focusTaskEntry()
+      return
+    }
     viewMode = "month"
     editingEvent = null
     editorVisible = true
@@ -254,7 +296,39 @@ Panel {
     guestNotificationPolicy = values[(values.indexOf(guestNotificationPolicy) + 1) % values.length]
   }
 
+  function focusTaskEntry() {
+    if (!canAddTask) return
+    Qt.callLater(function() { taskField.forceActiveFocus() })
+  }
+
+  function addTask() {
+    var title = taskField.text.trim()
+    if (!title || !canAddTask) return
+    daemonClient.createTask(title, newTaskListId, "", function(result, error) {
+      if (!error) taskField.text = ""
+    })
+  }
+
+  function completeTask(task) {
+    if (!task) return
+    var index = openTasks.indexOf(task)
+    if (index >= 0) selectedTaskIndex = index
+    daemonClient.setTaskCompleted(task, true)
+  }
+
+  function completeSelectedTask() {
+    if (!selectedTask) return
+    for (var index = 0; index < taskRows.length; index++) {
+      if (taskRows[index].task === selectedTask) {
+        if (!taskRows[index].readOnly) completeTask(selectedTask)
+        return
+      }
+    }
+  }
+
   function removeSelected() {
+    // Deleting tasks is left to the desktop app.
+    if (viewMode === "tasks") return
     if (!selectedEvent || selectedEvent.readOnly) return
     daemonClient.removeEvent(selectedEvent, recurrenceScope, guestNotificationPolicy, function(result, error) {
       if (!error) {
@@ -290,6 +364,7 @@ Panel {
   }
 
   function movePeriod(delta) {
+    if (viewMode === "tasks") return
     if (viewMode === "month") {
       moveMonth(delta)
       return
@@ -301,6 +376,14 @@ Panel {
   onVisibleEventsChanged: {
     if (visibleEvents.length === 0) selectedEventIndex = -1
     else if (selectedEventIndex >= visibleEvents.length) selectedEventIndex = visibleEvents.length - 1
+  }
+  onOpenTasksChanged: {
+    if (openTasks.length === 0) selectedTaskIndex = -1
+    else if (selectedTaskIndex >= openTasks.length) selectedTaskIndex = openTasks.length - 1
+    else if (selectedTaskIndex < 0 && viewMode === "tasks") selectedTaskIndex = 0
+  }
+  onTasksAvailableChanged: {
+    if (!tasksAvailable && viewMode === "tasks") setViewMode("month")
   }
   onSelectableCalendarsChanged: {
     if (!selectedCalendarId) return
@@ -373,10 +456,11 @@ Panel {
     PanelKeyCatcher {
       id: keyCatcher
       anchors.fill: parent
-      blocked: searchField.activeFocus || root.editorVisible
+      blocked: searchField.activeFocus || taskField.activeFocus || root.editorVisible
       onMoveRequested: function(dx, dy) { root.moveCursor(dx, dy) }
       onActivateRequested: {
-        if (root.selectedEvent) root.beginEdit(root.selectedEvent)
+        if (root.viewMode === "tasks") root.completeSelectedTask()
+        else if (root.selectedEvent) root.beginEdit(root.selectedEvent)
       }
       onCloseRequested: {
         if (root.calendarSelectorOpen) root.calendarSelectorOpen = false
@@ -396,28 +480,29 @@ Panel {
         else if (text === "2") root.setViewMode("day")
         else if (text === "3") root.setViewMode("week")
         else if (text === "4") root.setViewMode("agenda")
+        else if (text === "5") root.setViewMode("tasks")
         else if (text === "[") root.moveMonth(-1)
         else if (text === "]") root.moveMonth(1)
         else if (text === "e" || text === "E") {
-          if (root.selectedEvent) root.beginEdit(root.selectedEvent)
+          if (root.viewMode !== "tasks" && root.selectedEvent) root.beginEdit(root.selectedEvent)
         }
       }
 
       Shortcut {
         sequences: ["Delete"]
-        enabled: root.opened && !root.editorVisible && !searchField.activeFocus
+        enabled: root.opened && !root.editorVisible && !searchField.activeFocus && !taskField.activeFocus
         onActivated: root.removeSelected()
       }
 
       Shortcut {
         sequences: ["Ctrl+N"]
-        enabled: root.opened && !root.editorVisible && !searchField.activeFocus
+        enabled: root.opened && !root.editorVisible && !searchField.activeFocus && !taskField.activeFocus
         onActivated: root.beginCreate()
       }
 
       Shortcut {
         sequences: ["Ctrl+F"]
-        enabled: root.opened && !root.editorVisible && !searchField.activeFocus
+        enabled: root.opened && !root.editorVisible && !searchField.activeFocus && !taskField.activeFocus
         onActivated: {
           root.searching = true
           Qt.callLater(function() { searchField.forceActiveFocus() })
@@ -426,7 +511,8 @@ Panel {
 
       Shortcut {
         sequences: ["Ctrl+Z"]
-        enabled: root.opened && !root.editorVisible && !searchField.activeFocus && daemonClient.undoToken !== ""
+        enabled: root.opened && !root.editorVisible && !searchField.activeFocus && !taskField.activeFocus
+          && daemonClient.undoToken !== ""
         onActivated: daemonClient.undo()
       }
 
@@ -487,6 +573,19 @@ Panel {
                 text: root.upNext
                   ? "UP NEXT · " + Model.eventTitle(root.upNext) + " · " + Model.upNextLabel(root.upNext, root.today)
                   : "NO UPCOMING EVENTS"
+                color: Qt.darker(root.contentForeground, 1.4)
+                font.family: root.contentFontFamily
+                font.pixelSize: Style.font.caption
+                font.bold: true
+                font.letterSpacing: 1
+                elide: Text.ElideRight
+              }
+
+              Text {
+                textFormat: Text.PlainText
+                width: parent.width
+                visible: root.dueTaskCount > 0
+                text: "TASKS · " + root.dueTaskCount + " DUE"
                 color: Qt.darker(root.contentForeground, 1.4)
                 font.family: root.contentFontFamily
                 font.pixelSize: Style.font.caption
@@ -673,16 +772,21 @@ Panel {
               text: "‹"
               foreground: root.contentForeground
               focusable: true
+              enabled: root.viewMode !== "tasks"
               onClicked: root.movePeriod(-1)
             }
 
             Repeater {
-              model: [
-                { id: "month", label: "Month" },
-                { id: "day", label: "Day" },
-                { id: "week", label: "Week" },
-                { id: "agenda", label: "Agenda" }
-              ]
+              model: {
+                var views = [
+                  { id: "month", label: "Month" },
+                  { id: "day", label: "Day" },
+                  { id: "week", label: "Week" },
+                  { id: "agenda", label: "Agenda" }
+                ]
+                if (root.tasksAvailable) views.push({ id: "tasks", label: "Tasks" })
+                return views
+              }
 
               Button {
                 required property var modelData
@@ -699,7 +803,7 @@ Panel {
             Item {
               width: Math.max(0, parent.width - parent.children.reduce(function(total, child) {
                 return total + (child === this || !child.visible ? 0 : child.implicitWidth)
-              }, 0) - parent.spacing * 6)
+              }, 0) - parent.spacing * (root.tasksAvailable ? 7 : 6))
               height: 1
             }
 
@@ -707,7 +811,7 @@ Panel {
               text: "+ New"
               foreground: root.contentForeground
               focusable: true
-              enabled: daemonClient.supports("events.create")
+              enabled: root.viewMode === "tasks" ? root.canAddTask : daemonClient.supports("events.create")
               onClicked: root.beginCreate()
             }
 
@@ -715,6 +819,7 @@ Panel {
               text: "›"
               foreground: root.contentForeground
               focusable: true
+              enabled: root.viewMode !== "tasks"
               onClicked: root.movePeriod(1)
             }
           }
@@ -872,6 +977,61 @@ Panel {
                 root.beginEdit(event)
               }
               onJoinClicked: function(event) { root.joinEvent(event) }
+            }
+          }
+
+          Column {
+            visible: root.viewMode === "tasks"
+            width: parent.width
+            height: visible ? Style.space(330) : 0
+            spacing: Style.space(6)
+
+            Row {
+              id: taskEntryRow
+              width: parent.width
+              spacing: Style.space(5)
+
+              TextField {
+                id: taskField
+                width: parent.width - addTaskButton.implicitWidth - parent.spacing
+                placeholderText: root.newTaskListId !== ""
+                  ? "Add a task to " + root.newTaskListName : "No task list accepts new tasks"
+                foreground: root.contentForeground
+                enabled: root.canAddTask
+                maximumLength: daemonClient.maximumTitleLength
+                Accessible.name: "New task"
+                Keys.onReturnPressed: root.addTask()
+                Keys.onEnterPressed: root.addTask()
+                Keys.onEscapePressed: function(event) {
+                  text = ""
+                  keyCatcher.forceActiveFocus()
+                  event.accepted = true
+                }
+              }
+
+              Button {
+                id: addTaskButton
+                text: "Add"
+                foreground: root.contentForeground
+                focusable: true
+                enabled: root.canAddTask && taskField.text.trim() !== ""
+                  && daemonClient.activeMutationId === ""
+                onClicked: root.addTask()
+              }
+            }
+
+            Components.TaskList {
+              width: parent.width
+              height: parent.height - taskEntryRow.height - parent.spacing
+              rows: root.taskRows
+              selectedTaskId: root.selectedTask ? String(root.selectedTask.id) : ""
+              today: root.today
+              busy: daemonClient.activeMutationId !== ""
+              actionsEnabled: daemonClient.connectionState === "ready"
+              foreground: root.contentForeground
+              fontFamily: root.contentFontFamily
+              onCompleteRequested: function(task) { root.completeTask(task) }
+              onTaskClicked: function(task) { root.selectedTaskIndex = root.openTasks.indexOf(task) }
             }
           }
 

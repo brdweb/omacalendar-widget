@@ -205,4 +205,67 @@ TestCase {
     verify(summary.stale)
     compare(summary.message, "Sign in again")
   }
+
+  function test_taskRowsGroupOpenTasksFromEnabledLists() {
+    var lists = [
+      { id: "local-tasks", color: "#112233", enabled: true, readOnly: false },
+      { id: "work", color: "#445566", enabled: true, readOnly: true },
+      { id: "hidden", enabled: false }
+    ]
+    var rows = Model.taskRows([
+      { id: "later", listId: "local-tasks", title: "Later", dueDate: "2026-09-02" },
+      { id: "undated", listId: "local-tasks", title: "Someday", dueDate: "" },
+      { id: "late-b", listId: "work", title: "B overdue", dueDate: "2026-08-20" },
+      { id: "late-a", listId: "local-tasks", title: "A overdue", dueDate: "2026-08-20" },
+      { id: "today", listId: "local-tasks", title: "Today", dueDate: "2026-08-28" },
+      { id: "done", listId: "local-tasks", title: "Done", dueDate: "2026-08-28", completed: true },
+      { id: "hidden-task", listId: "hidden", title: "Hidden", dueDate: "2026-08-28" },
+      { id: "orphan", listId: "deleted", title: "Orphan", dueDate: "2026-08-28" }
+    ], lists, "2026-08-28")
+    var summary = rows.map(function(row) {
+      return row.kind === "header" ? row.label + ":" + row.count : row.task.id
+    })
+    compare(summary.join(","),
+      "OVERDUE:2,late-a,late-b,TODAY:1,today,UPCOMING:1,later,NO DATE:1,undated")
+    compare(rows[2].task.id, "late-b")
+    verify(rows[2].readOnly)
+    compare(rows[2].color, "#445566")
+    verify(!rows[1].readOnly)
+  }
+
+  function test_dueTaskCountCountsOpenTasksDueTodayOrEarlier() {
+    var lists = [{ id: "local-tasks" }, { id: "hidden", enabled: false }]
+    compare(Model.dueTaskCount([
+      { listId: "local-tasks", dueDate: "2026-08-27" },
+      { listId: "local-tasks", dueDate: "2026-08-28" },
+      { listId: "local-tasks", dueDate: "2026-08-29" },
+      { listId: "local-tasks", dueDate: "" },
+      { listId: "local-tasks", dueDate: "2026-08-28", completed: true },
+      { listId: "hidden", dueDate: "2026-08-28" }
+    ], lists, "2026-08-28"), 2)
+    compare(Model.dueTaskCount(null, null, "2026-08-28"), 0)
+  }
+
+  function test_taskDueLabelsAreRelativeNearToday() {
+    var today = new Date(2026, 7, 28, 12, 0, 0)
+    compare(Model.taskDueLabel({ dueDate: "2026-08-28" }, today, null), "Today")
+    compare(Model.taskDueLabel({ dueDate: "2026-08-29" }, today, null), "Tomorrow")
+    compare(Model.taskDueLabel({ dueDate: "2026-08-27" }, today, null), "Yesterday")
+    compare(Model.taskDueLabel({ dueDate: "2026-09-10" }, today, null), "2026-09-10")
+    compare(Model.taskDueLabel({ dueDate: "" }, today, null), "")
+    compare(Model.taskDueLabel({ dueDate: "2026-02-31" }, today, null), "")
+  }
+
+  function test_defaultTaskListPrefersTheDeviceList() {
+    compare(Model.defaultTaskListId([
+      { id: "google", readOnly: false },
+      { id: "local-tasks", readOnly: false }
+    ]), "local-tasks")
+    compare(Model.defaultTaskListId([
+      { id: "subscribed", readOnly: true },
+      { id: "local-tasks", enabled: false },
+      { id: "caldav" }
+    ]), "caldav")
+    compare(Model.defaultTaskListId([{ id: "subscribed", readOnly: true }]), "")
+  }
 }

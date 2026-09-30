@@ -478,3 +478,125 @@ function calendarColor(event, calendars, fallback) {
 function clientMutationId() {
   return "widget-" + Date.now().toString(36) + "-" + Math.floor(Math.random() * 0x100000000).toString(36)
 }
+
+// Tasks (IPC 2.2). Due days are yyyy-MM-dd text, which sorts the same way as
+// the days themselves, so tasks are grouped and ordered without parsing.
+
+function taskListsById(lists) {
+  var result = {}
+  var input = Array.isArray(lists) ? lists : []
+  for (var index = 0; index < input.length; index++) {
+    if (input[index] && typeof input[index] === "object")
+      result[String(input[index].id)] = input[index]
+  }
+  return result
+}
+
+// Tasks from disabled lists stay out of the widget, as in the app's
+// "All lists" view. A task whose list is unknown is left out too.
+function visibleTasks(tasks, lists) {
+  var byId = taskListsById(lists)
+  var input = Array.isArray(tasks) ? tasks : []
+  return input.filter(function(task) {
+    var list = task && byId[String(task.listId)]
+    return !!list && list.enabled !== false
+  })
+}
+
+function taskGroupKey(task, todayKey) {
+  if (task && task.completed) return "completed"
+  var due = String(task && task.dueDate || "")
+  if (!due) return "undated"
+  if (due < todayKey) return "overdue"
+  return due === todayKey ? "today" : "upcoming"
+}
+
+function compareTasks(left, right) {
+  var leftDue = String(left.dueDate || "")
+  var rightDue = String(right.dueDate || "")
+  if (leftDue !== rightDue) {
+    if (!leftDue) return 1
+    if (!rightDue) return -1
+    return leftDue < rightDue ? -1 : 1
+  }
+  return String(left.title || "").localeCompare(String(right.title || ""))
+}
+
+function taskGroupLabel(key) {
+  if (key === "overdue") return "OVERDUE"
+  if (key === "today") return "TODAY"
+  if (key === "upcoming") return "UPCOMING"
+  return "NO DATE"
+}
+
+// Rows for the Tasks view: {kind: "header", key, label, count} followed by
+// {kind: "task", task, group, color, readOnly}. Open tasks only; completed
+// tasks leave the view once the daemon confirms the change.
+function taskRows(tasks, lists, todayKey) {
+  var byId = taskListsById(lists)
+  var order = ["overdue", "today", "upcoming", "undated"]
+  var groups = {}
+  var input = visibleTasks(tasks, lists)
+  for (var index = 0; index < input.length; index++) {
+    var key = taskGroupKey(input[index], todayKey)
+    if (key === "completed") continue
+    if (!groups[key]) groups[key] = []
+    groups[key].push(input[index])
+  }
+  var rows = []
+  for (var groupIndex = 0; groupIndex < order.length; groupIndex++) {
+    var groupKey = order[groupIndex]
+    var members = groups[groupKey]
+    if (!members || members.length === 0) continue
+    members.sort(compareTasks)
+    rows.push({ kind: "header", key: groupKey, label: taskGroupLabel(groupKey), count: members.length })
+    for (var memberIndex = 0; memberIndex < members.length; memberIndex++) {
+      var list = byId[String(members[memberIndex].listId)]
+      rows.push({
+        kind: "task",
+        task: members[memberIndex],
+        group: groupKey,
+        color: String(list.color || ""),
+        readOnly: list.readOnly === true
+      })
+    }
+  }
+  return rows
+}
+
+// Open tasks due today or earlier in the visible lists.
+function dueTaskCount(tasks, lists, todayKey) {
+  var count = 0
+  var input = visibleTasks(tasks, lists)
+  for (var index = 0; index < input.length; index++) {
+    var due = String(input[index].dueDate || "")
+    if (!input[index].completed && due && due <= todayKey) count++
+  }
+  return count
+}
+
+function taskDueLabel(task, today, locale) {
+  var due = parseDate(String(task && task.dueDate || ""))
+  if (!due) return ""
+  var todayKey = dateKey(today)
+  var key = dateKey(due)
+  if (key === todayKey) return "Today"
+  if (key === dateKey(addDays(today, 1))) return "Tomorrow"
+  if (key === dateKey(addDays(today, -1))) return "Yesterday"
+  var format = due.getFullYear() === today.getFullYear() ? "ddd, MMM d" : "MMM d, yyyy"
+  return locale ? due.toLocaleDateString(locale, format) : key
+}
+
+// New tasks go to the device-only list, as in the app, unless it is hidden or
+// missing; then to the first writable enabled list.
+function defaultTaskListId(lists) {
+  var input = Array.isArray(lists) ? lists : []
+  var fallback = ""
+  for (var index = 0; index < input.length; index++) {
+    var list = input[index]
+    if (!list || list.readOnly === true || list.enabled === false) continue
+    if (String(list.id) === "local-tasks") return "local-tasks"
+    if (!fallback) fallback = String(list.id)
+  }
+  return fallback
+}

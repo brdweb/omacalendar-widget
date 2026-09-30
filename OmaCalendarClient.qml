@@ -15,6 +15,8 @@ Item {
   readonly property int maximumTitleLength: 1024
   readonly property int maximumLocationLength: 4096
   readonly property int maximumNotesLength: 65536
+  readonly property int taskPageLimit: 500
+  readonly property int maximumTasks: 2000
 
   property string socketPath: {
     var runtime = Quickshell.env("XDG_RUNTIME_DIR")
@@ -56,8 +58,15 @@ Item {
   property string activeMutationId: ""
   property string transportFailureDetail: ""
   property string receiveBuffer: ""
+  // Tasks (IPC 2.2) are read with tasks.list rather than widget.snapshot, and
+  // stay empty against daemons that do not offer them.
+  property var taskLists: []
+  property var tasks: []
+  property int taskGeneration: 0
+  readonly property bool tasksSupported: supports("taskLists.list") && supports("tasks.list")
 
   signal snapshotUpdated()
+  signal tasksUpdated()
   signal actionSucceeded(string action, var result)
   signal actionFailed(string action, string message)
 
@@ -129,6 +138,23 @@ Item {
     return true
   }
 
+  function _validDateKey(value) {
+    var raw = String(value || "")
+    return raw === "" || (/^\d{4}-\d{2}-\d{2}$/.test(raw) && Model.parseDate(raw) !== null)
+  }
+
+  function _validTaskList(list) {
+    return _object(list) && _validId(list.id)
+      && String(list.name || "").length <= maximumTitleLength
+  }
+
+  function _validTaskDto(task) {
+    return _object(task) && _validId(task.id) && _validId(task.listId)
+      && String(task.title || "").length <= maximumTitleLength
+      && String(task.notes || "").length <= maximumNotesLength
+      && _validDateKey(task.dueDate)
+  }
+
   function _validEnum(value, values) {
     return values.indexOf(String(value || "")) !== -1
   }
@@ -191,6 +217,24 @@ Item {
     if (method === "events.undo" && !_validId(String(payload.undoToken || "")))
       return "The undo token is invalid"
     return ""
+  }
+
+  function _validateTaskMutation(method, payload) {
+    var task = _object(payload) ? payload.task : null
+    if (!_object(task)) return "The task is invalid"
+    if (method === "tasks.create") {
+      if (!String(task.title || "").trim() || String(task.title).length > maximumTitleLength)
+        return "The task title is missing or too long"
+      if (!_validId(String(task.listId || ""))) return "A valid task list is required"
+      if (!_validDateKey(task.dueDate)) return "The task due date is invalid"
+      return ""
+    }
+    if (method === "tasks.update") {
+      if (!_validId(String(task.id || ""))) return "The task reference is invalid"
+      if (typeof task.completed !== "boolean") return "The task change is invalid"
+      return ""
+    }
+    return "This task change is not supported"
   }
 
   function connectNow() {
@@ -340,6 +384,10 @@ Item {
   }
 
   function _handleNotification(event, data) {
+    if (event === "tasks.changed") {
+      taskRefresh.restart()
+      return
+    }
     var syncStatusChanged = event === "sync.statusChanged" || event === "sync.changed"
     var relevant = event === "widget.changed" || event === "events.changed" || event === "calendars.changed"
       || event === "calendarSets.changed"
@@ -404,7 +452,10 @@ Item {
       forceNextSnapshot = true
       _setState("ready", "Connected")
       if (supports("system.subscribe")) {
-        _request("system.subscribe", { topics: ["widget", "events", "calendars", "calendarSets", "conflicts", "operations", "sync"], sinceRevision: revision }, function(result, subscribeError) {
+        var topics = ["widget", "events", "calendars", "calendarSets", "conflicts", "operations", "sync"]
+        // A daemon before IPC 2.2 rejects topics it does not know.
+        if (tasksSupported) topics.push("tasks")
+        _request("system.subscribe", { topics: topics, sinceRevision: revision }, function(result, subscribeError) {
           if (subscribeError) {
             root.stateDetail = "Live updates unavailable; polling for changes"
             root.forceNextSnapshot = true
@@ -416,7 +467,38 @@ Item {
         })
       }
       refreshSnapshot(lastSelection, true)
+      refreshTasks()
     })
+  }
+
+  function refreshTasks() {
+    if (connectionState !== "ready" || !tasksSupported) return
+    var generation = ++taskGeneration
+    _request("taskLists.list", {}, function(result, error) {
+      if (generation !== root.taskGeneration || error) return
+      var lists = result && result.lists
+      if (!root._validObjectArray(lists, 500) || !lists.every(root._validTaskList)) return
+      root._requestTaskPage(lists, [], 0, generation)
+    }, 10000)
+  }
+
+  // Reads open tasks page by page, and replaces the shown tasks only once the
+  // last page has arrived, so a partial read never looks like removed tasks.
+  function _requestTaskPage(lists, collected, offset, generation) {
+    _request("tasks.list", { includeCompleted: false, offset: offset, limit: taskPageLimit }, function(result, error) {
+      if (generation !== root.taskGeneration || error) return
+      var page = result && result.tasks
+      if (!root._validObjectArray(page, root.taskPageLimit) || !page.every(root._validTaskDto)) return
+      var next = collected.concat(page)
+      var nextOffset = Number(result.nextOffset)
+      if (result.hasMore === true && nextOffset > offset && next.length < root.maximumTasks) {
+        root._requestTaskPage(lists, next, nextOffset, generation)
+        return
+      }
+      root.taskLists = lists
+      root.tasks = next
+      root.tasksUpdated()
+    }, 10000)
   }
 
   function _finishSnapshotRequest() {
@@ -658,6 +740,63 @@ Item {
     _mutation("events.undo", { undoToken: token }, "undo")
   }
 
+  // Task writes share the event mutation guard so one change is in flight at a
+  // time. tasks.* carries no clientMutationId; the daemon's revision check
+  // rejects a completion made against an outdated copy.
+  function _taskMutation(method, params, action, callback) {
+    if (activeMutationId !== "") {
+      var busy = "A calendar change is already in progress"
+      lastActionError = busy
+      actionFailed(action, busy)
+      if (callback) callback(null, { code: "mutation_in_progress", message: busy, retryable: true })
+      return
+    }
+    if (!supports(method)) {
+      var unsupported = "This daemon does not support " + method
+      lastActionError = unsupported
+      actionFailed(action, unsupported)
+      return
+    }
+    var validationError = _validateTaskMutation(method, params)
+    if (validationError) {
+      lastActionError = validationError
+      actionFailed(action, validationError)
+      if (callback) callback(null, { code: "invalid_params", message: validationError, retryable: false })
+      return
+    }
+    var mutationId = Model.clientMutationId()
+    activeMutationId = mutationId
+    lastActionError = ""
+    _request(method, params, function(result, error) {
+      if (activeMutationId === mutationId) activeMutationId = ""
+      if (error) {
+        lastActionError = String(error.message || "Task change failed")
+        actionFailed(action, lastActionError)
+        if (callback) callback(null, error)
+        // A stale copy is the usual cause; show the daemon's current tasks.
+        taskRefresh.restart()
+        return
+      }
+      actionSucceeded(action, result || {})
+      if (callback) callback(result || {}, null)
+      taskRefresh.restart()
+    }, 15000)
+  }
+
+  function createTask(title, listId, dueDate, callback) {
+    var task = { title: String(title || "").trim(), listId: String(listId || "") }
+    if (dueDate) task.dueDate = String(dueDate)
+    _taskMutation("tasks.create", { task: task }, "create-task", callback)
+  }
+
+  function setTaskCompleted(task, completed, callback) {
+    var params = { task: { id: String(task && task.id || ""), completed: completed === true } }
+    var revision = Number(task && task.localRevision)
+    if (task && task.localRevision !== undefined && task.localRevision !== null && isFinite(revision))
+      params.expectedLocalRevision = revision
+    _taskMutation("tasks.update", params, completed === true ? "complete-task" : "reopen-task", callback)
+  }
+
   function openDeepLink(path) {
     var suffix = String(path || "")
     if (suffix.charAt(0) === "/") suffix = suffix.slice(1)
@@ -722,10 +861,19 @@ Item {
   }
 
   Timer {
+    id: taskRefresh
+    interval: 120
+    onTriggered: root.refreshTasks()
+  }
+
+  Timer {
     interval: Math.max(15000, root.pollIntervalMs)
     repeat: true
     running: root.connectionState === "ready"
-    onTriggered: root.refreshSnapshot(root.lastSelection)
+    onTriggered: {
+      root.refreshSnapshot(root.lastSelection)
+      root.refreshTasks()
+    }
   }
 
   Timer {

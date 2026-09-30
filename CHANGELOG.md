@@ -6,6 +6,19 @@ begin.
 
 ## [Unreleased]
 
+### Added
+
+- A Tasks view (`5`) for OmaCalendar 2.0 and newer (IPC 2.2): open tasks from
+  the app's enabled lists, grouped into Overdue, Today, Upcoming and No date,
+  with keyboard or click completion and quick add to the device-only list. The
+  header counts tasks due today or earlier. The view stays hidden with an older
+  app, and the widget does not subscribe such a daemon to the `tasks` topic.
+
+### Changed
+
+- The fake daemon used by the tests reports IPC 2.2 and serves task lists;
+  a separate scenario keeps IPC 2.1 compatibility covered.
+
 ## [0.1.3] - 2026-09-22
 
 ### Fixed

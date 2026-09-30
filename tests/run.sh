@@ -46,12 +46,14 @@ qml_files=(
   "$plugin_dir/components/AgendaList.qml"
   "$plugin_dir/components/EventEditor.qml"
   "$plugin_dir/components/CompactTimeline.qml"
+  "$plugin_dir/components/TaskList.qml"
   "$plugin_dir/tests/client_harness.qml"
   "$plugin_dir/tests/layout_harness.qml"
   "$plugin_dir/tests/tst_keyboard.qml"
   "$plugin_dir/tests/agenda_harness.qml"
   "$plugin_dir/tests/default_calendar_harness.qml"
   "$plugin_dir/tests/event_details_harness.qml"
+  "$plugin_dir/tests/tasks_panel_harness.qml"
   "$plugin_dir/tools/preview/preview_harness.qml"
 )
 
@@ -109,7 +111,7 @@ run_client_scenario() {
   printf 'IPC scenario passed: %s\n' "$scenario"
 }
 
-for scenario in happy fragmented oversized-frame invalid-response mutation-contract duplicate-mutation invalid-snapshot all-day-single-day gap sync-status offline restart incompatible; do
+for scenario in happy fragmented oversized-frame invalid-response mutation-contract duplicate-mutation invalid-snapshot all-day-single-day gap sync-status offline restart incompatible tasks ipc-2-1; do
   run_client_scenario "$scenario"
 done
 
@@ -148,6 +150,30 @@ if [[ $event_details_status -ne 0 ]] || ! grep -q "EVENT_DETAILS_TEST_PASS" <<<"
   exit 1
 fi
 echo "Read-only event details smoke passed"
+
+tasks_socket="$test_root/tasks-panel.sock"
+python3 "$plugin_dir/tests/fake_daemon.py" "$tasks_socket" tasks &
+fake_pid=$!
+for _attempt in $(seq 1 100); do
+  [[ -S $tasks_socket ]] && break
+  sleep 0.02
+done
+[[ -S $tasks_socket ]]
+set +e
+tasks_panel_output=$(timeout 15s env \
+  OMACALENDAR_TEST_SOCKET="$tasks_socket" \
+  OMACALENDAR_WIDGET_ENTRY="file://$plugin_dir/tests/tasks_panel_harness.qml" \
+  quickshell --no-color --path "$test_root/shell.qml" 2>&1)
+tasks_panel_status=$?
+set -e
+kill "$fake_pid"
+wait "$fake_pid" 2>/dev/null || true
+fake_pid=""
+if [[ $tasks_panel_status -ne 0 ]] || ! grep -q "TASKS_PANEL_TEST_PASS" <<<"$tasks_panel_output"; then
+  printf '%s\n' "$tasks_panel_output" >&2
+  exit 1
+fi
+echo "Tasks panel smoke passed"
 
 for scale in 1 1.25 2; do
   set +e

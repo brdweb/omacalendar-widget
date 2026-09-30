@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import ".."
+import "../CalendarModel.js" as Model
 
 Item {
   id: root
@@ -9,6 +10,7 @@ Item {
   property int phase: 0
   property bool sawMissingWithCache: false
   property bool sawDuplicateRejected: false
+  property bool sawInvalidTaskRejected: false
 
   function fail(message) {
     console.error("CLIENT_TEST_FAIL [" + scenario + "]: " + message)
@@ -81,6 +83,17 @@ Item {
       }
       if (!client.supports("widget.snapshot") || !client.supports("events.create")) {
         root.fail("capabilities were not negotiated")
+        return
+      }
+
+      if (root.scenario === "ipc-2-1") {
+        if (client.tasksSupported || client.taskLists.length !== 0 || client.tasks.length !== 0) {
+          root.fail("an IPC 2.1 daemon was treated as offering tasks")
+        } else if (client.stateDetail.indexOf("Live updates unavailable") !== -1) {
+          root.fail("the widget subscribed an IPC 2.1 daemon to the tasks topic")
+        } else {
+          root.pass()
+        }
         return
       }
 
@@ -208,7 +221,43 @@ Item {
       }, "none")
     }
 
+    function onTasksUpdated() {
+      if (root.scenario !== "tasks") return
+      var ids = client.tasks.map(function(task) { return task.id })
+      if (root.phase === 0) {
+        if (ids.join(",") !== "task-overdue,task-shared,task-undated,task-hidden") {
+          root.fail("paged task read was incomplete: " + ids.join(","))
+          return
+        }
+        var rows = Model.taskRows(client.tasks, client.taskLists, "2026-08-28")
+        var shown = rows.filter(function(row) { return row.kind === "task" })
+          .map(function(row) { return row.task.id })
+        if (shown.join(",") !== "task-overdue,task-shared,task-undated") {
+          root.fail("disabled task lists were not left out: " + shown.join(","))
+          return
+        }
+        root.phase = 1
+        client.createTask("   ", "local-tasks", "")
+        if (!root.sawInvalidTaskRejected) {
+          root.fail("a blank task title reached the daemon")
+          return
+        }
+        client.setTaskCompleted(client.tasks[0], true)
+      } else if (root.phase === 2) {
+        if (ids.indexOf("task-overdue") !== -1) return
+        root.phase = 3
+        client.createTask("Created task", "local-tasks", "")
+      } else if (root.phase === 4) {
+        if (ids.indexOf("task-created") !== -1) root.pass()
+      }
+    }
+
     function onActionSucceeded(action, result) {
+      if (root.scenario === "tasks") {
+        if (root.phase === 1 && action === "complete-task") root.phase = 2
+        else if (root.phase === 3 && action === "create-task") root.phase = 4
+        return
+      }
       if (root.scenario === "duplicate-mutation" && action === "create") {
         if (!root.sawDuplicateRejected) root.fail("second create was not rejected while the first was pending")
         else root.pass()
@@ -270,6 +319,11 @@ Item {
     }
 
     function onActionFailed(action, message) {
+      if (root.scenario === "tasks" && root.phase === 1 && action === "create-task"
+          && message.indexOf("missing") !== -1) {
+        root.sawInvalidTaskRejected = true
+        return
+      }
       if (root.scenario === "duplicate-mutation" && action === "create"
           && message.indexOf("already in progress") !== -1) {
         root.sawDuplicateRejected = true

@@ -12,7 +12,7 @@ background daemon.
 `org.omacalendar.widget` is the thin Omarchy Shell companion for OmaCalendar. It
 shows a configurable clock and Up Next summary in the bar, then opens
 keyboard-friendly Month, Day, Week, and Agenda views with search and inline
-event editing. Calendar data, provider networking, credentials,
+event editing, plus a Tasks view when the app provides tasks. Calendar data, provider networking, credentials,
 conflict resolution, and durable writes remain owned by `omacalendard`.
 
 ![OmaCalendar widget showing a month calendar and agenda populated with synthetic events](preview.png)
@@ -115,8 +115,9 @@ Use the verified archive path when an exact immutable release is required or
 the release-only branch invariant cannot be independently confirmed.
 
 Open the popup by clicking the OmaCalendar item in the bar. Use the view tabs
-or number keys `1`–`4` for Month, Day, Week, and Agenda. Press `N` to create an
-event, `S` or `/` to search, and `T` to return to today.
+or number keys `1`–`4` for Month, Day, Week, and Agenda, and `5` for Tasks with
+OmaCalendar 2.0 or newer. Press `N` to create an event, `S` or `/` to search,
+and `T` to return to today.
 
 ## Update or remove
 
@@ -294,6 +295,20 @@ Mutation methods are capability-gated and use these exact envelopes:
 - `sync.all {}` starts synchronization and is treated as a command rather than
   an event mutation.
 
+Tasks (IPC 2.2) are read outside `widget.snapshot` and are used only when
+`system.info` lists `taskLists.list` and `tasks.list`; only then does the
+widget add the `tasks` topic to `system.subscribe`:
+
+- `taskLists.list {}` returns `lists` (`id`, `name`, `color`, `readOnly`,
+  `enabled`). Tasks in disabled lists are not shown.
+- `tasks.list {includeCompleted: false, offset, limit}` is read page by page
+  until `hasMore` is false (at most 2,000 tasks). The widget uses a task's `id`,
+  `listId`, `title`, `dueDate`, `dirty` and `localRevision`.
+- `tasks.update {task: {id, completed: true}, expectedLocalRevision}` completes
+  a task, and `tasks.create {task: {title, listId}}` adds one. Task writes carry
+  no `clientMutationId`, but share the widget's one-change-at-a-time guard.
+- A `tasks.changed` notification rereads the tasks.
+
 Timed editor drafts contain `calendarId`, `title`, `location`, `notes`,
 `allDay: false`, UTC ISO `start`/`end`, and `timeMode: "zoned"`. All-day drafts
 instead contain exclusive ISO `startDate`/`endDate`. Guest notification policy
@@ -317,6 +332,13 @@ The widget hands complex workflows to these registered desktop links:
 - Arrow keys move dates. `T` returns to today, `N` creates, `E` edits, `S` or
   `/` searches, `C` opens the calendar filter, and `R` refreshes. Agenda items
   open in the inline editor.
+- With OmaCalendar 2.0 or newer (IPC 2.2) a Tasks view (`5`) lists open tasks
+  from the lists enabled in the app, grouped into Overdue, Today, Upcoming and
+  No date, and the header counts tasks due today or earlier. Up and Down move
+  the selection; `Enter` or `Space` marks the selected task complete, and `N`
+  adds a task to the device-only Tasks list. Tasks from read-only lists cannot
+  be completed; editing, due dates and deleting stay in the desktop app. With
+  an older app the view is hidden.
   Search exposes dedicated Clear and Close buttons; `Escape` also clears and
   closes it. `Ctrl+N`, `Ctrl+F`, and `Ctrl+Z` create, search, and undo.
 - Recurring changes always expose an explicit occurrence/future/series scope.
