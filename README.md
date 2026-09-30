@@ -2,12 +2,12 @@
 
 **Requires the full [OmaCalendar app](https://github.com/brdweb/omacalendar),
 installed separately.** Get the app from the
-[OmaCalendar downloads page](https://github.com/brdweb/omacalendar/releases/tag/v1.1.0)
+[OmaCalendar downloads page](https://github.com/brdweb/omacalendar/releases/tag/v2.0.0)
 and follow [Install the required OmaCalendar app](#install-the-required-omacalendar-app)
 below before installing this widget. The widget does not include the app or its
 background daemon.
 
-## OmaCalendar widget 0.1.3
+## OmaCalendar widget 0.2.0
 
 `org.omacalendar.widget` is the thin Omarchy Shell companion for OmaCalendar. It
 shows a configurable clock and Up Next summary in the bar, then opens
@@ -17,7 +17,8 @@ conflict resolution, and durable writes remain owned by `omacalendard`.
 
 ![OmaCalendar widget showing a month calendar and agenda populated with synthetic events](preview.png)
 
-The widget is released independently and is qualified with OmaCalendar 1.1.0 over IPC 2.1.
+The widget is released independently and is qualified with OmaCalendar 2.0.0 over IPC 2.2.
+It still works with OmaCalendar 1.x (IPC 2.0 and 2.1), without the Tasks view.
 
 ## Requirements
 
@@ -31,14 +32,14 @@ daemon through socket activation and reads its local cache.
 
 ## Install the required OmaCalendar app
 
-The widget is qualified against the published OmaCalendar `1.1.0` app.
+The widget is qualified against the published OmaCalendar `2.0.0` app.
 Download its checksummed, attested native Arch package, install it, and enable
 the on-demand daemon socket before installing the widget:
 
 ```bash
 set -euo pipefail
-app_version=1.1.0
-package="omacalendar-1.1.0-1-x86_64.pkg.tar.zst"
+app_version=2.0.0
+package="omacalendar-2.0.0-1-x86_64.pkg.tar.zst"
 release_url="https://github.com/brdweb/omacalendar/releases/download/v${app_version}"
 curl -fLO "${release_url}/${package}"
 curl -fLO "${release_url}/SHA256SUMS"
@@ -58,7 +59,7 @@ are in the app's
 
 ## Install a verified release archive
 
-For `v0.1.3`, the immutable public-install path is the
+For `v0.2.0`, the immutable public-install path is the
 source archive produced from that reviewed signed tag. Download it into an
 empty directory, verify its exact checksum plus both GitHub attestations,
 validate the extracted plugin, and only then place it in Omarchy's user plugin
@@ -66,7 +67,7 @@ directory:
 
 ```bash
 set -euo pipefail
-release_version=0.1.3
+release_version=0.2.0
 archive="omacalendar-widget-${release_version}-source.tar.gz"
 release_url="https://github.com/brdweb/omacalendar-widget/releases/download/v${release_version}"
 curl -fLO "${release_url}/${archive}"
@@ -147,6 +148,14 @@ if ! mv "${source_dir}" "${target}"; then
 fi
 omarchy-shell shell rescanPlugins
 echo "Previous snapshot retained at ${backup}"
+```
+
+If the bar keeps showing the previous version after an update (for example no
+Tasks tab after moving to 0.2.0), restart the shell so it reloads the plugin's
+QML from disk:
+
+```bash
+omarchy restart shell
 ```
 
 Remove a normal Omarchy installation with:

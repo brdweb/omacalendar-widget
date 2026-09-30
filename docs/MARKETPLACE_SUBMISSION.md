@@ -17,15 +17,15 @@ calendar
 ### Maintainer notes
 
 Requires a separately installed OmaCalendar daemon exposing IPC 2.0 or newer.
-Widget 0.1.3 is qualified with OmaCalendar 1.1.0, but the projects'
+Widget 0.2.0 is qualified with OmaCalendar 2.0.0, but the projects'
 versions and release schedules are independent. The desktop application does
 not need to remain open; systemd user socket activation starts the daemon on
 demand. Install the qualified app's checksummed and attested native package with:
 
 ```bash
 set -euo pipefail
-app_version=1.1.0
-package=omacalendar-1.1.0-1-x86_64.pkg.tar.zst
+app_version=2.0.0
+package=omacalendar-2.0.0-1-x86_64.pkg.tar.zst
 release_url="https://github.com/brdweb/omacalendar/releases/download/v${app_version}"
 curl -fLO "${release_url}/${package}"
 curl -fLO "${release_url}/SHA256SUMS"
@@ -40,13 +40,14 @@ systemctl --user enable --now omacalendard.socket
 
 The app's complete installation and first-run guide is at
 https://github.com/brdweb/omacalendar/blob/main/docs/GETTING_STARTED.md.
-Google has approved the app's branding and Calendar data-access verification.
+Google has approved the app's branding and Calendar data-access verification;
+the tasks and free/busy scopes added in app 2.0.0 await Google's verification.
 The app's release acceptance record remains authoritative for external-account
 and provider testing. The widget itself accesses only the user-local
 OmaCalendar socket and does not contact Google or any calendar provider.
 
 Current Omarchy add/update commands follow the repository's remote default
-HEAD. The release-only `main` branch stays at the exact commit of signed tag `v0.1.3`;
+HEAD. The release-only `main` branch stays at the exact commit of signed tag `v0.2.0`;
 development commits are not merged there.
 Users who require an immutable snapshot can use the checksummed,
 GitHub-attested signed-release archive documented in the root README.

@@ -1,50 +1,50 @@
 {
-  "stableVersion": "0.1.3",
-  "candidateVersion": "0.1.3",
-  "candidateOmaCalendarVersion": "1.1.0",
-  "evidenceCommit": "08d6ad120adef742296cf25f74b457ed8b2612c0",
+  "stableVersion": "0.2.0",
+  "candidateVersion": "0.2.0",
+  "candidateOmaCalendarVersion": "2.0.0",
+  "evidenceCommit": "901f70aca779c9d1cad0ca971a7da49f7071d9a1",
   "acceptedBy": "brdweb (release maintainer)",
-  "acceptedAt": "2026-09-22T00:00:00+00:00",
+  "acceptedAt": "2026-09-30T15:45:00+00:00",
   "gates": {
     "automated": {
       "status": "passed",
-      "evidence": "Full current-Omarchy suite passed for the accepted runtime, including two new regression fixtures added for this fix: a qmltestrunner CalendarModel test (test_allDayEqualStartAndEndDateIsOneDay) and a fake_daemon.py/client_harness.qml all-day-single-day IPC scenario. Static, qualified-app, acceptance, SBOM, syntax, and independent IPC fixture gates all passed."
+      "evidence": "The full current-Omarchy suite passed on the evidence commit in CI run 36738337827 (PR #15): all 16 IPC fixture scenarios, including the new tasks, ipc-2-1 and late-start scenarios; the new Panel-level Tasks harness; agenda, default-calendar and read-only details smokes; layout at 100%, 125% and 200%; 25 qmltestrunner model tests including four new task-model tests; keyboard tests; and the static, qualified-app, acceptance, SBOM, syntax and whitespace gates. The tasks and late-start scenarios were checked to fail when paging, the tasks subscription or the reconnect fix is removed."
     },
     "artifacts": {
       "status": "passed",
-      "evidence": "A source archive built from the evidence commit was byte-for-byte reproducible across two builds and passed the deterministic package-structure and checksum verifier; the signed release archive, SBOM, and attestations are reverified before publication."
+      "evidence": "A local rehearsal of scripts/release/package-source.sh on the release tree (under an unsigned, never-pushed local tag) built byte-identical archives twice and passed the deterministic package-structure verifier. The signed release archive, SBOM, checksums and attestations produced by the release workflow are reverified before publication."
     },
     "install_upgrade_remove": {
       "status": "passed",
-      "evidence": "This exact fix was hot-patched onto the maintainer's own live, already-installed 0.1.2 widget and exercised with a full omarchy-shell restart, replacing the earlier per-file hot-reload path with a clean process restart. Its config, section placement, and enable state carried over unchanged. A fresh install/remove cycle via the packaged archive was not separately re-exercised, since the upgrade mechanics themselves are unchanged from 0.1.2."
+      "evidence": "On 2026-09-30 the maintainer's live, widgetctl-managed widget on a current Omarchy laptop was upgraded from 0.1.3 to the evidence-commit runtime with omacalendar-widgetctl restore followed by install; the bar placement, center anchor and shortcut override came back unchanged. The running shell's plugin hot reload kept the previous QML (no Tasks tab) until `omarchy restart shell`; after the restart the new runtime loaded without QML errors, and the README now documents the restart. A fresh install and removal from the packaged 0.2.0 archive was not separately exercised."
     },
     "transactional_restore": {
       "status": "passed",
-      "evidence": "Unchanged from 0.1.2; this release touches only OmaCalendarClient.qml and CalendarModel.js and does not modify omacalendar-widgetctl or the transactional installer. Not re-exercised this cycle."
+      "evidence": "omacalendar-widgetctl restore was exercised twice on the maintainer's system on 2026-09-30 (0.1.2 to 0.1.3, then 0.1.3 to the candidate), each time restoring the clock, anchor and shortcut before the reinstall. The transactional installer itself is unchanged in this release."
     },
     "views_edges": {
       "status": "passed",
-      "evidence": "The new CalendarModel unit test verifies the previously-invisible single-day all-day event now resolves to exactly its own calendar day (Month/Day/Agenda date-range logic), checked against the real event data that exposed the defect. Headless layout coverage remains in the tagged gate. Manual UI click-through of Month/Day/Agenda for this event was not separately performed."
+      "evidence": "Against the live OmaCalendar 2.0.0 daemon and real calendar data, the Month view rendered as before and the new Tasks view appeared, showed the empty state, then listed and removed a task as it was added and completed. The headless Tasks harness checks grouping, disabled lists, the read-only guard and that the Tasks view does not clip the panel body. Day, Week and Agenda views are unchanged and were covered only by the automated suite."
     },
     "keyboard": {
       "status": "passed",
-      "evidence": "Unchanged by this fix; the qmltestrunner keyboard suite (activation, arrow navigation, blocked forwarding) passed."
+      "evidence": "Live on the maintainer's system: `5` opened the Tasks view, `N` focused the new-task field, Return added the task, Escape left the field and Space completed the selected task. The qmltestrunner keyboard suite and the Tasks harness selection checks passed."
     },
     "real_mutations": {
       "status": "passed",
-      "evidence": "Unchanged by this fix; mutation-envelope and duplicate-submission IPC fixtures passed. No live create/update/move/remove mutation was exercised against the real app this cycle."
+      "evidence": "Live against the maintainer's OmaCalendar 2.0.0 daemon, two clearly labelled synthetic tasks were created through the widget in the device-only Tasks list and completed from the keyboard; tasks.list confirmed each as completed at local revision 2. No Google or CalDAV task list and no calendar event was changed. Event create/update/move/remove were not exercised live this cycle; their envelopes are unchanged and covered by the mutation-contract fixtures."
     },
     "resilience": {
       "status": "passed",
-      "evidence": "IPC fixtures cover fragmented and oversized input, malformed responses and snapshots, offline cache, daemon restart, revision gaps, sync-only changes, and incompatible protocol handling, plus the new all-day-single-day fixture confirming the fix without weakening snapshot validation elsewhere."
+      "evidence": "IPC fixtures cover fragmented and oversized input, malformed responses and snapshots, offline cache, daemon restart, revision gaps, sync-only changes, incompatible protocol, an IPC 2.1 daemon without tasks, and the new late-start scenario for the Quickshell 0.3.1 reconnect fix. The late-start fix was not exercised live, since the maintainer's daemon socket was already listening."
     },
     "desktop_handoff": {
       "status": "passed",
-      "evidence": "Unchanged; this release does not touch app-link execution or the meeting-link launch path added in 0.1.2."
+      "evidence": "Unchanged; this release does not touch app-link execution or the meeting-link launch path. Not re-exercised this cycle."
     },
     "mixed_scale_theme": {
       "status": "passed",
-      "evidence": "The tagged current-Omarchy gate repeats layout checks at 100%, 125%, and 200% scale. Physical mixed-monitor and theme combinations are not exhaustively certified, consistent with prior releases."
+      "evidence": "The tagged current-Omarchy gate repeats layout checks at 100%, 125% and 200% scale. The live check ran on one monitor with the maintainer's current theme; physical mixed-monitor and theme combinations are not exhaustively certified, consistent with prior releases."
     }
   }
 }

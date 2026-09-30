@@ -63,7 +63,7 @@ class AcceptanceContractTest(unittest.TestCase):
         with self.assertRaisesRegex(GATE.GateError, "every required gate"):
             GATE.verify_record(record, self.stable_tag)
         with self.assertRaisesRegex(GATE.GateError, "stable tag must match"):
-            GATE.verify_record(self.completed(), "v0.2.0")
+            GATE.verify_record(self.completed(), "v9.9.9")
 
     def test_passed_checkboxes_still_require_owner_and_commit(self) -> None:
         for key, value in (("acceptedBy", None), ("acceptedAt", None), ("evidenceCommit", "shortsha")):

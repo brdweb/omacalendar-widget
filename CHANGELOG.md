@@ -6,6 +6,8 @@ begin.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-30
+
 ### Added
 
 - A Tasks view (`5`) for OmaCalendar 2.0 and newer (IPC 2.2): open tasks from
@@ -23,6 +25,8 @@ begin.
 
 ### Changed
 
+- Qualify the widget with OmaCalendar 2.0.0 (IPC 2.2) while retaining IPC 2.0
+  compatibility.
 - The fake daemon used by the tests reports IPC 2.2 and serves task lists;
   a separate scenario keeps IPC 2.1 compatibility covered.
 
