@@ -11,6 +11,7 @@ Item {
   property bool sawMissingWithCache: false
   property bool sawDuplicateRejected: false
   property bool sawInvalidTaskRejected: false
+  property bool sawServiceMissing: false
 
   function fail(message) {
     console.error("CLIENT_TEST_FAIL [" + scenario + "]: " + message)
@@ -38,6 +39,7 @@ Item {
     target: client
 
     function onConnectionStateChanged() {
+      if (client.connectionState === "missing") root.sawServiceMissing = true
       if (root.scenario === "invalid-response" && client.connectionState === "missing") {
         if (client.stateDetail.indexOf("invalid response") === -1)
           root.fail("non-object JSON response was not rejected")
@@ -83,6 +85,13 @@ Item {
       }
       if (!client.supports("widget.snapshot") || !client.supports("events.create")) {
         root.fail("capabilities were not negotiated")
+        return
+      }
+
+      if (root.scenario === "late-start") {
+        if (!root.sawServiceMissing) root.fail("the first connection unexpectedly found the daemon")
+        else if (!root.validBaseline(client)) root.fail("late-start baseline was invalid")
+        else root.pass()
         return
       }
 

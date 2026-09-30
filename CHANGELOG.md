@@ -14,6 +14,13 @@ begin.
   header counts tasks due today or earlier. The view stays hidden with an older
   app, and the widget does not subscribe such a daemon to the `tasks` topic.
 
+### Fixed
+
+- Connect once the OmaCalendar service appears when it was not running as the
+  shell started. Quickshell 0.3.1 ignores every connection request after a
+  failed attempt on the same socket, so the widget stayed on "Connecting"
+  until the shell restarted; each attempt now uses a new socket.
+
 ### Changed
 
 - The fake daemon used by the tests reports IPC 2.2 and serves task lists;

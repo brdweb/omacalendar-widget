@@ -83,13 +83,19 @@ run_client_scenario() {
   local client_output
   local client_status
 
-  python3 "$plugin_dir/tests/fake_daemon.py" "$socket_path" "$scenario" &
-  fake_pid=$!
-  for _attempt in $(seq 1 100); do
-    [[ -S $socket_path ]] && break
-    sleep 0.02
-  done
-  [[ -S $socket_path ]]
+  if [[ $scenario == late-start ]]; then
+    # The daemon appears only after the widget's first connection has failed.
+    (sleep 2 && exec python3 "$plugin_dir/tests/fake_daemon.py" "$socket_path" happy) &
+    fake_pid=$!
+  else
+    python3 "$plugin_dir/tests/fake_daemon.py" "$socket_path" "$scenario" &
+    fake_pid=$!
+    for _attempt in $(seq 1 100); do
+      [[ -S $socket_path ]] && break
+      sleep 0.02
+    done
+    [[ -S $socket_path ]]
+  fi
 
   set +e
   client_output=$(timeout 15s env \
@@ -111,7 +117,7 @@ run_client_scenario() {
   printf 'IPC scenario passed: %s\n' "$scenario"
 }
 
-for scenario in happy fragmented oversized-frame invalid-response mutation-contract duplicate-mutation invalid-snapshot all-day-single-day gap sync-status offline restart incompatible tasks ipc-2-1; do
+for scenario in happy fragmented oversized-frame invalid-response mutation-contract duplicate-mutation invalid-snapshot all-day-single-day gap sync-status offline restart incompatible late-start tasks ipc-2-1; do
   run_client_scenario "$scenario"
 done
 
@@ -151,10 +157,9 @@ if [[ $event_details_status -ne 0 ]] || ! grep -q "EVENT_DETAILS_TEST_PASS" <<<"
 fi
 echo "Read-only event details smoke passed"
 
-# The panel's client connects before BarWidget passes it the socketPath
-# setting, and Quickshell 0.3.1 does not retry a failed first connection. Give
-# the harness its own runtime directory whose default daemon socket is the
-# fixture, which also keeps it away from any real daemon.
+# The panel's client makes its first connection before BarWidget passes it the
+# socketPath setting. Give the harness its own runtime directory whose default
+# daemon socket is the fixture, so that attempt can never reach a real daemon.
 panel_runtime="$test_root/panel-runtime"
 mkdir -p "$panel_runtime/omacalendar"
 chmod 700 "$panel_runtime"

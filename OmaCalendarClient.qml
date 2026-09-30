@@ -58,6 +58,8 @@ Item {
   property string activeMutationId: ""
   property string transportFailureDetail: ""
   property string receiveBuffer: ""
+  // The Socket for the current connection attempt; see _openSocket().
+  property var socket: null
   // Tasks (IPC 2.2) are read with tasks.list rather than widget.snapshot, and
   // stay empty against daemons that do not offer them.
   property var taskLists: []
@@ -243,13 +245,31 @@ Item {
       _setState("missing", "XDG_RUNTIME_DIR is unavailable")
       return
     }
-    if (socket.connected) {
+    if (_socketConnected()) {
       if (connectionState === "ready") refreshSnapshot(lastSelection, true)
       else _negotiate()
       return
     }
     _setState("connecting", "Connecting to OmaCalendar…")
+    _openSocket()
+  }
+
+  function _socketConnected() {
+    return !!socket && socket.connected
+  }
+
+  // Quickshell 0.3.1 keeps a Socket's failed connection attempt and silently
+  // ignores every later request to connect it, so a widget started before the
+  // daemon would never connect. Each attempt therefore uses a new Socket.
+  function _openSocket() {
+    var previous = socket
+    socket = socketComponent.createObject(root)
+    if (previous) previous.destroy()
     socket.connected = true
+  }
+
+  function _closeSocket() {
+    if (socket) socket.connected = false
   }
 
   function _scheduleReconnect() {
@@ -260,7 +280,7 @@ Item {
   }
 
   function _request(method, params, callback, timeoutMs) {
-    if (!socket.connected) {
+    if (!_socketConnected()) {
       if (callback) callback(null, { code: "daemon_unavailable", message: "OmaCalendar service is unavailable", retryable: true })
       return ""
     }
@@ -338,7 +358,7 @@ Item {
     if (_utf8Size(raw) > maximumFrameBytes) {
       transportFailureDetail = "The daemon sent an oversized response"
       _setState("error", transportFailureDetail)
-      socket.connected = false
+      _closeSocket()
       return
     }
     var message
@@ -347,13 +367,13 @@ Item {
     } catch (error) {
       transportFailureDetail = "The daemon sent invalid JSON"
       _setState("error", transportFailureDetail)
-      socket.connected = false
+      _closeSocket()
       return
     }
     if (!_object(message)) {
       transportFailureDetail = "The daemon sent an invalid response"
       _setState("error", transportFailureDetail)
-      socket.connected = false
+      _closeSocket()
       return
     }
     if (message.event) {
@@ -372,14 +392,14 @@ Item {
       var frame = receiveBuffer.slice(0, newline)
       receiveBuffer = receiveBuffer.slice(newline + 1)
       if (frame !== "") _receive(frame)
-      if (!socket.connected) return
+      if (!_socketConnected()) return
       newline = receiveBuffer.indexOf("\n")
     }
     if (_utf8Size(receiveBuffer) > maximumFrameBytes) {
       transportFailureDetail = "The daemon sent an oversized response"
       receiveBuffer = ""
       _setState("error", transportFailureDetail)
-      socket.connected = false
+      _closeSocket()
     }
   }
 
@@ -419,10 +439,10 @@ Item {
         if (error.code === "protocol_mismatch" || error.code === "unsupported_protocol"
             || error.code === "incompatible_protocol") {
           _setState("incompatible", "OmaCalendar IPC 2 is required")
-          socket.connected = false
+          _closeSocket()
         } else {
           _setState("error", String(error.message || "Compatibility check failed"))
-          socket.connected = false
+          _closeSocket()
         }
         return
       }
@@ -430,19 +450,19 @@ Item {
       var minor = Number(result && result.protocolMinor)
       if (!isFinite(major) || !isFinite(minor)) {
         _setState("incompatible", "The daemon did not report a valid IPC version")
-        socket.connected = false
+        _closeSocket()
         return
       }
       if (major !== protocolMajor || minor < minimumProtocolMinor) {
         _setState("incompatible", "Daemon protocol " + major + "." + minor + " is incompatible; this widget needs 2.0+")
-        socket.connected = false
+        _closeSocket()
         return
       }
       serverInfo = result || {}
       methods = Array.isArray(result.methods) ? result.methods : []
       if (!supports("widget.snapshot")) {
         _setState("incompatible", "The daemon does not provide widget.snapshot")
-        socket.connected = false
+        _closeSocket()
         return
       }
       retryAttempt = 0
@@ -803,47 +823,54 @@ Item {
     Quickshell.execDetached(["uwsm-app", "--", "omacalendar", "omacalendar://" + suffix])
   }
 
-  Socket {
-    id: socket
-    path: root.socketPath
-    parser: SplitParser {
-      // Receive raw chunks so an unterminated peer frame cannot grow inside
-      // SplitParser beyond the widget's own frame limit.
-      splitMarker: ""
-      onRead: function(data) { root._receiveChunk(data) }
-    }
-    onConnectionStateChanged: {
-      if (connected) {
-        root.needsBaseline = true
-        root.cacheStale = true
-        root.forceNextSnapshot = true
-        root._negotiate()
-      } else {
-        root.receiveBuffer = ""
-        root.methods = []
-        root.serverInfo = ({})
-        root.needsBaseline = true
-        root.cacheStale = true
-        root.forceNextSnapshot = true
-        root._failPending("daemon_unavailable", "OmaCalendar service disconnected")
+  Component {
+    id: socketComponent
+
+    Socket {
+      id: connection
+      path: root.socketPath
+      parser: SplitParser {
+        // Receive raw chunks so an unterminated peer frame cannot grow inside
+        // SplitParser beyond the widget's own frame limit.
+        splitMarker: ""
+        onRead: function(data) { root._receiveChunk(data) }
+      }
+      onConnectionStateChanged: {
+        // A replaced Socket may still report its own shutdown.
+        if (connection !== root.socket) return
+        if (connected) {
+          root.needsBaseline = true
+          root.cacheStale = true
+          root.forceNextSnapshot = true
+          root._negotiate()
+        } else {
+          root.receiveBuffer = ""
+          root.methods = []
+          root.serverInfo = ({})
+          root.needsBaseline = true
+          root.cacheStale = true
+          root.forceNextSnapshot = true
+          root._failPending("daemon_unavailable", "OmaCalendar service disconnected")
+          if (root.connectionState !== "incompatible") {
+            var detail = root.transportFailureDetail || (root.snapshot && root.snapshot.revision ? "Service unavailable; showing the last snapshot" : "OmaCalendar service is not running")
+            root.transportFailureDetail = ""
+            root._setState("missing", detail)
+            root._scheduleReconnect()
+          }
+        }
+      }
+      onError: {
+        if (connection !== root.socket) return
         if (root.connectionState !== "incompatible") {
           var detail = root.transportFailureDetail || (root.snapshot && root.snapshot.revision ? "Service unavailable; showing the last snapshot" : "OmaCalendar service is not running")
           root.transportFailureDetail = ""
           root._setState("missing", detail)
+          // A failed connect does not always produce a second connected-state
+          // transition in Quickshell. Re-arm here as well as from the normal
+          // disconnect path so a daemon that starts after the widget can still
+          // be discovered without reopening the shell.
           root._scheduleReconnect()
         }
-      }
-    }
-    onError: {
-      if (root.connectionState !== "incompatible") {
-        var detail = root.transportFailureDetail || (root.snapshot && root.snapshot.revision ? "Service unavailable; showing the last snapshot" : "OmaCalendar service is not running")
-        root.transportFailureDetail = ""
-        root._setState("missing", detail)
-        // A failed connect does not always produce a second connected-state
-        // transition in Quickshell. Re-arm here as well as from the normal
-        // disconnect path so a daemon that starts after the widget can still
-        // be discovered without reopening the shell.
-        root._scheduleReconnect()
       }
     }
   }

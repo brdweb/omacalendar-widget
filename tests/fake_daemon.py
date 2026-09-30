@@ -163,8 +163,8 @@ class Fixture:
             legacy = self.scenario == "ipc-2-1"
             # The offline and restart fixtures drop the connection right after
             # the snapshot. A task read still in flight then races that close
-            # and can cost the client the unread snapshot reply, so these
-            # snapshot-cache scenarios leave tasks out.
+            # and can cost the client the unread snapshot reply these
+            # snapshot-cache scenarios check, so they leave tasks out.
             without_tasks = legacy or self.scenario in {"offline", "restart"}
             return Reply(result={
                 "server": "omacalendard-test",
