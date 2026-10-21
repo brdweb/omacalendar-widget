@@ -25,11 +25,11 @@ The widget is a pure presentation client. All calendar data comes from the OmaCa
 
 ## Cursor Cloud specific instructions
 
-The Cloud Agent install provides Qt 6.8.3 at `/usr/lib/qt6/bin`, Quickshell 0.3.2, Weston 16.0.1, and Tesseract 5.5.3. Ubuntu 24.04's Qt 6.4 and Weston 13 cannot build Quickshell or run `tests/run-headless-omarchy.sh` (`--fake-seat`). The Omarchy shell reference pinned in `.github/workflows/ci.yml` is at `/usr/share/omarchy`, and `omarchy` is on `PATH`.
+The Cloud Agent install provides Qt 6.8.3 at `/usr/lib/qt6/bin`, Quickshell 0.3.2, Weston 16.0.1 (`--fake-seat`), and Tesseract 5.5.3 with the current English traineddata. The Omarchy shell reference pinned in `.github/workflows/ci.yml` is at `/usr/share/omarchy`, and `omarchy` is on `PATH`.
 
 - `./tests/run-portable.sh` needs no display.
 - `./tests/run-headless-omarchy.sh` is the full suite. It starts headless Weston itself. `./tests/run.sh` expects `WAYLAND_DISPLAY` to already exist.
-- Preview OCR is checked with Tesseract 5.5 and the current `eng.traineddata`. The distro Tesseract 5.3 model does not read the committed preview.
+- Preview OCR uses that Tesseract 5.5.3 install. The allowlist in `tools/preview/validate_preview.py` matches its reading of `preview.png`.
 
 ## Safety rules
 
