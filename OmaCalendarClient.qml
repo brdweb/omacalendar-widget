@@ -95,7 +95,7 @@ Item {
 
   function _validObjectArray(value, maximum) {
     if (!Array.isArray(value) || value.length > maximum) return false
-    for (var index = 0; index < value.length; index++)
+    for (let index = 0; index < value.length; index++)
       if (!_object(value[index])) return false
     return true
   }
@@ -127,13 +127,13 @@ Item {
         || !_validObjectArray(value.conflicts, 500)
         || !_validObjectArray(value.operations, 100))
       return false
-    for (var calendarIndex = 0; calendarIndex < value.calendars.length; calendarIndex++)
+    for (let calendarIndex = 0; calendarIndex < value.calendars.length; calendarIndex++)
       if (!_validId(value.calendars[calendarIndex].id)) return false
-    for (var eventIndex = 0; eventIndex < value.events.length; eventIndex++)
+    for (let eventIndex = 0; eventIndex < value.events.length; eventIndex++)
       if (!_validEventDto(value.events[eventIndex])) return false
-    for (var keyIndex = 0; keyIndex < 2; keyIndex++) {
-      var key = keyIndex === 0 ? "currentEvent" : "upNext"
-      var event = value[key]
+    for (let keyIndex = 0; keyIndex < 2; keyIndex++) {
+      const key = keyIndex === 0 ? "currentEvent" : "upNext"
+      const event = value[key]
       if (event !== undefined && event !== null && Object.keys(event).length > 0
           && !_validEventDto(event)) return false
     }
@@ -184,8 +184,8 @@ Item {
       return "The event details are too long"
     if (patch.start !== undefined || patch.startDate !== undefined
         || patch.end !== undefined || patch.endDate !== undefined) {
-      var start = Model.eventStart(patch)
-      var end = Model.eventEnd(patch)
+      const start = Model.eventStart(patch)
+      const end = Model.eventEnd(patch)
       if (!start || !end || end <= start) return "The event dates are invalid"
     }
     return ""
@@ -307,7 +307,7 @@ Item {
       return ""
     }
     var next = {}
-    for (var key in pending) next[key] = pending[key]
+    for (let key in pending) next[key] = pending[key]
     next[id] = {
       method: method,
       callback: callback,
@@ -322,8 +322,8 @@ Item {
   function _utf8Size(value) {
     var text = String(value || "")
     var bytes = 0
-    for (var index = 0; index < text.length; index++) {
-      var code = text.charCodeAt(index)
+    for (let index = 0; index < text.length; index++) {
+      const code = text.charCodeAt(index)
       if (code <= 0x7f) bytes += 1
       else if (code <= 0x7ff) bytes += 2
       else if (code >= 0xd800 && code <= 0xdbff && index + 1 < text.length
@@ -340,7 +340,7 @@ Item {
     var item = pending[id]
     if (!item) return null
     var next = {}
-    for (var key in pending) if (key !== id) next[key] = pending[key]
+    for (let key in pending) if (key !== id) next[key] = pending[key]
     pending = next
     return item
   }
@@ -348,8 +348,8 @@ Item {
   function _failPending(code, message) {
     var current = pending
     pending = ({})
-    for (var id in current) {
-      var item = current[id]
+    for (let id in current) {
+      const item = current[id]
       if (item.callback) item.callback(null, { code: code, message: message, retryable: true })
     }
   }
@@ -389,7 +389,7 @@ Item {
     receiveBuffer += String(data || "")
     var newline = receiveBuffer.indexOf("\n")
     while (newline !== -1) {
-      var frame = receiveBuffer.slice(0, newline)
+      const frame = receiveBuffer.slice(0, newline)
       receiveBuffer = receiveBuffer.slice(newline + 1)
       if (frame !== "") _receive(frame)
       if (!_socketConnected()) return
@@ -472,7 +472,7 @@ Item {
       forceNextSnapshot = true
       _setState("ready", "Connected")
       if (supports("system.subscribe")) {
-        var topics = ["widget", "events", "calendars", "calendarSets", "conflicts", "operations", "sync"]
+        const topics = ["widget", "events", "calendars", "calendarSets", "conflicts", "operations", "sync"]
         // A daemon before IPC 2.2 rejects topics it does not know.
         if (tasksSupported) topics.push("tasks")
         _request("system.subscribe", { topics: topics, sinceRevision: revision }, function(result, subscribeError) {
@@ -546,7 +546,7 @@ Item {
       return
     }
     var params = {}
-    for (var key in lastSelection) params[key] = lastSelection[key]
+    for (let key in lastSelection) params[key] = lastSelection[key]
     var queryKey = JSON.stringify(lastSelection)
     if (!requestFull && revision > 0 && queryKey === snapshotQueryKey) params.sinceRevision = revision
     if (requestFull) forceNextSnapshot = false
@@ -579,8 +579,8 @@ Item {
           return
         }
         if (incomingRevision > root.revision) {
-          var retained = {}
-          for (var retainedKey in root.snapshot) retained[retainedKey] = root.snapshot[retainedKey]
+          const retained = {}
+          for (let retainedKey in root.snapshot) retained[retainedKey] = root.snapshot[retainedKey]
           retained.revision = incomingRevision
           root.snapshot = retained
           root.snapshotUpdated()
@@ -613,14 +613,14 @@ Item {
 
   function _mutation(method, params, action, callback) {
     if (activeMutationId !== "") {
-      var busy = "A calendar change is already in progress"
+      const busy = "A calendar change is already in progress"
       lastActionError = busy
       actionFailed(action, busy)
       if (callback) callback(null, { code: "mutation_in_progress", message: busy, retryable: true })
       return
     }
     if (!supports(method)) {
-      var unsupported = "This daemon does not support " + method
+      const unsupported = "This daemon does not support " + method
       lastActionError = unsupported
       actionFailed(action, unsupported)
       return
@@ -765,14 +765,14 @@ Item {
   // rejects a completion made against an outdated copy.
   function _taskMutation(method, params, action, callback) {
     if (activeMutationId !== "") {
-      var busy = "A calendar change is already in progress"
+      const busy = "A calendar change is already in progress"
       lastActionError = busy
       actionFailed(action, busy)
       if (callback) callback(null, { code: "mutation_in_progress", message: busy, retryable: true })
       return
     }
     if (!supports(method)) {
-      var unsupported = "This daemon does not support " + method
+      const unsupported = "This daemon does not support " + method
       lastActionError = unsupported
       actionFailed(action, unsupported)
       return
@@ -852,7 +852,7 @@ Item {
           root.forceNextSnapshot = true
           root._failPending("daemon_unavailable", "OmaCalendar service disconnected")
           if (root.connectionState !== "incompatible") {
-            var detail = root.transportFailureDetail || (root.snapshot && root.snapshot.revision ? "Service unavailable; showing the last snapshot" : "OmaCalendar service is not running")
+            const detail = root.transportFailureDetail || (root.snapshot && root.snapshot.revision ? "Service unavailable; showing the last snapshot" : "OmaCalendar service is not running")
             root.transportFailureDetail = ""
             root._setState("missing", detail)
             root._scheduleReconnect()
@@ -862,7 +862,7 @@ Item {
       onError: {
         if (connection !== root.socket) return
         if (root.connectionState !== "incompatible") {
-          var detail = root.transportFailureDetail || (root.snapshot && root.snapshot.revision ? "Service unavailable; showing the last snapshot" : "OmaCalendar service is not running")
+          const detail = root.transportFailureDetail || (root.snapshot && root.snapshot.revision ? "Service unavailable; showing the last snapshot" : "OmaCalendar service is not running")
           root.transportFailureDetail = ""
           root._setState("missing", detail)
           // A failed connect does not always produce a second connected-state
@@ -911,9 +911,9 @@ Item {
     onTriggered: {
       var now = Date.now()
       var expired = []
-      for (var id in root.pending) if (Number(root.pending[id].deadline) <= now) expired.push(id)
-      for (var index = 0; index < expired.length; index++) {
-        var item = root._takePending(expired[index])
+      for (let id in root.pending) if (Number(root.pending[id].deadline) <= now) expired.push(id)
+      for (let index = 0; index < expired.length; index++) {
+        const item = root._takePending(expired[index])
         if (item && item.callback) item.callback(null, { code: "timeout", message: item.method + " timed out", retryable: true })
       }
     }

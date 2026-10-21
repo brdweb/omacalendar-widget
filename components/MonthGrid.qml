@@ -23,7 +23,7 @@ Item {
   readonly property var cells: Model.monthGrid(year, month, weekStart, today, selectedDate, marks)
   readonly property var weekdays: {
     var values = []
-    for (var offset = 0; offset < 7; offset++) values.push((weekStart + offset) % 7)
+    for (let offset = 0; offset < 7; offset++) values.push((weekStart + offset) % 7)
     return values
   }
   readonly property real cellWidth: Style.space(38)

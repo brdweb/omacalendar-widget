@@ -68,16 +68,16 @@ ShellRoot {
   }
 
   function widgetButton(widget) {
-    for (var index = 0; index < widget.children.length; index++) {
-      var child = widget.children[index]
+    for (let index = 0; index < widget.children.length; index++) {
+      const child = widget.children[index]
       if (child && typeof child.triggerPress === "function") return child
     }
     return null
   }
 
   function widgetPanel(widget) {
-    for (var index = 0; index < widget.children.length; index++) {
-      var child = widget.children[index]
+    for (let index = 0; index < widget.children.length; index++) {
+      const child = widget.children[index]
       if (child && child.item && "bodyViewportHeight" in child.item) return child.item
     }
     return null
@@ -89,16 +89,16 @@ ShellRoot {
     onTriggered: {
       var horizontal = [topWidget, bottomWidget]
       var vertical = [leftWidget, rightWidget]
-      for (var horizontalIndex = 0; horizontalIndex < horizontal.length; horizontalIndex++) {
-        var horizontalWidget = horizontal[horizontalIndex]
+      for (let horizontalIndex = 0; horizontalIndex < horizontal.length; horizontalIndex++) {
+        const horizontalWidget = horizontal[horizontalIndex]
         if (horizontalWidget.vertical || horizontalWidget.implicitWidth <= 0
             || horizontalWidget.implicitHeight !== horizontalWidget.bar.barSize) {
           root.fail("top/bottom bar geometry is invalid")
           return
         }
       }
-      for (var verticalIndex = 0; verticalIndex < vertical.length; verticalIndex++) {
-        var verticalWidget = vertical[verticalIndex]
+      for (let verticalIndex = 0; verticalIndex < vertical.length; verticalIndex++) {
+        const verticalWidget = vertical[verticalIndex]
         if (!verticalWidget.vertical || verticalWidget.implicitWidth !== verticalWidget.bar.barSize
             || verticalWidget.implicitHeight <= 0) {
           root.fail("left/right bar geometry is invalid")

@@ -35,12 +35,12 @@ ShellRoot {
     function switchPanelFrom(owner, direction) { return false }
   }
 
-  TestBar { id: bar }
+  TestBar { id: testBar }
 
   Item {
     Oma.BarWidget {
       id: widget
-      bar: bar
+      bar: testBar
       settings: ({ socketPath: Quickshell.env("OMACALENDAR_TEST_SOCKET") })
     }
   }
@@ -51,8 +51,8 @@ ShellRoot {
   }
 
   function panel() {
-    for (var index = 0; index < widget.children.length; index++) {
-      var child = widget.children[index]
+    for (let index = 0; index < widget.children.length; index++) {
+      const child = widget.children[index]
       if (child && child.item && "bodyViewportHeight" in child.item) return child.item
     }
     return null

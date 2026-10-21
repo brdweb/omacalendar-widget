@@ -107,7 +107,7 @@ Item {
       }
 
       if (root.scenario === "all-day-single-day") {
-        var gameEvent = client.snapshot.events.find(function(event) {
+        const gameEvent = client.snapshot.events.find(function(event) {
           return event.id === "game-1"
         })
         if (!gameEvent) {
@@ -176,7 +176,7 @@ Item {
       if (root.scenario === "duplicate-mutation") {
         if (root.phase !== 0 || !root.validBaseline(client)) return
         root.phase = 1
-        var draft = {
+        const draft = {
           calendarId: "local",
           title: "Created once",
           start: "2026-08-28T15:00:00Z",
@@ -193,7 +193,7 @@ Item {
           root.fail("sync-only status changes unexpectedly changed the database revision")
           return
         }
-        var status = client.snapshot.status || {}
+        const status = client.snapshot.status || {}
         if (root.phase === 0 && client.snapshot.events[0].title === "Sync baseline"
             && status.online === true && status.syncing === false) {
           root.phase = 1
@@ -238,8 +238,8 @@ Item {
           root.fail("paged task read was incomplete: " + ids.join(","))
           return
         }
-        var rows = Model.taskRows(client.tasks, client.taskLists, "2026-08-28")
-        var shown = rows.filter(function(row) { return row.kind === "task" })
+        const rows = Model.taskRows(client.tasks, client.taskLists, "2026-08-28")
+        const shown = rows.filter(function(row) { return row.kind === "task" })
           .map(function(row) { return row.task.id })
         if (shown.join(",") !== "task-overdue,task-shared,task-undated") {
           root.fail("disabled task lists were not left out: " + shown.join(","))

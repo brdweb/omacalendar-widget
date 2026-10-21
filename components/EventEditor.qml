@@ -36,14 +36,14 @@ Item {
   readonly property string sourceCalendarId: String(event && event.calendarId || "")
 
   function calendarById(calendarId) {
-    for (var index = 0; index < calendars.length; index++) {
+    for (let index = 0; index < calendars.length; index++) {
       if (String(calendars[index].id) === String(calendarId)) return calendars[index]
     }
     return null
   }
 
   function calendarAccountId(calendarId) {
-    for (var index = 0; index < writableCalendars.length; index++) {
+    for (let index = 0; index < writableCalendars.length; index++) {
       if (String(writableCalendars[index].id) === String(calendarId))
         return String(writableCalendars[index].accountId || "")
     }
@@ -99,7 +99,7 @@ Item {
     guestNotificationPolicy = "none"
     calendarIndex = 0
     var sourceCalendar = String(event && event.calendarId || defaultCalendarId || "")
-    for (var index = 0; index < writableCalendars.length; index++) {
+    for (let index = 0; index < writableCalendars.length; index++) {
       if (String(writableCalendars[index].id) === sourceCalendar) calendarIndex = index
     }
     validationLabel.text = ""
@@ -108,8 +108,8 @@ Item {
 
   function cycleCalendar() {
     if (writableCalendars.length === 0) return
-    for (var offset = 1; offset <= writableCalendars.length; offset++) {
-      var next = (calendarIndex + offset) % writableCalendars.length
+    for (let offset = 1; offset <= writableCalendars.length; offset++) {
+      const next = (calendarIndex + offset) % writableCalendars.length
       if (canSelectCalendar(writableCalendars[next])) {
         calendarIndex = next
         validationLabel.text = ""
@@ -133,7 +133,7 @@ Item {
     allDay = !allDay
     if (allDay) {
       startField.text = Model.dateKey(start)
-      var exclusiveEnd = new Date(end.getFullYear(), end.getMonth(), end.getDate(), 12, 0, 0, 0)
+      let exclusiveEnd = new Date(end.getFullYear(), end.getMonth(), end.getDate(), 12, 0, 0, 0)
       // All-day end dates are exclusive. A timed event wholly within one day
       // must therefore become a one-day all-day event, not an invalid equal
       // start/end date.

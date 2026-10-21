@@ -85,7 +85,7 @@ Panel {
   readonly property int dueTaskCount: Model.dueTaskCount(daemonClient.tasks, daemonClient.taskLists, todayKey)
   readonly property string newTaskListId: Model.defaultTaskListId(daemonClient.taskLists)
   readonly property string newTaskListName: {
-    for (var index = 0; index < daemonClient.taskLists.length; index++) {
+    for (let index = 0; index < daemonClient.taskLists.length; index++) {
       if (String(daemonClient.taskLists[index].id) === newTaskListId)
         return String(daemonClient.taskLists[index].name || "Tasks")
     }
@@ -96,7 +96,7 @@ Panel {
 
   readonly property string selectedCalendarName: {
     if (!selectedCalendarId) return "All Calendars"
-    for (var index = 0; index < selectableCalendars.length; index++) {
+    for (let index = 0; index < selectableCalendars.length; index++) {
       if (String(selectableCalendars[index].id) === selectedCalendarId)
         return String(selectableCalendars[index].name || "Calendar")
     }
@@ -279,7 +279,7 @@ Panel {
   }
 
   function calendarForId(calendarId) {
-    for (var index = 0; index < calendars.length; index++) {
+    for (let index = 0; index < calendars.length; index++) {
       if (String(calendars[index].id) === String(calendarId || "")) return calendars[index]
     }
     return null
@@ -318,7 +318,7 @@ Panel {
 
   function completeSelectedTask() {
     if (!selectedTask) return
-    for (var index = 0; index < taskRows.length; index++) {
+    for (let index = 0; index < taskRows.length; index++) {
       if (taskRows[index].task === selectedTask) {
         if (!taskRows[index].readOnly) completeTask(selectedTask)
         return
@@ -879,9 +879,9 @@ Panel {
                 }
                 onSaveRequested: function(draft, guestPolicy) {
                   if (root.editingEvent) {
-                    var sourceCalendarId = String(root.editingEvent.calendarId || "")
-                    var targetCalendarId = String(draft.calendarId || "")
-                    var save = sourceCalendarId !== "" && targetCalendarId !== ""
+                    const sourceCalendarId = String(root.editingEvent.calendarId || "")
+                    const targetCalendarId = String(draft.calendarId || "")
+                    const save = sourceCalendarId !== "" && targetCalendarId !== ""
                       && sourceCalendarId !== targetCalendarId
                       ? daemonClient.moveEvent : daemonClient.updateEvent
                     save(root.editingEvent, draft, root.recurrenceScope, guestPolicy, function(result, error) {

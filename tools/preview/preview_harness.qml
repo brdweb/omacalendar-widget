@@ -11,7 +11,7 @@ ShellRoot {
   readonly property string socketPath: Quickshell.env("OMACALENDAR_PREVIEW_SOCKET")
   readonly property string screenName: Quickshell.env("OMACALENDAR_PREVIEW_SCREEN")
   readonly property var previewScreen: {
-    for (var index = 0; index < Quickshell.screens.length; index++) {
+    for (let index = 0; index < Quickshell.screens.length; index++) {
       if (Quickshell.screens[index].name === screenName) return Quickshell.screens[index]
     }
     return null

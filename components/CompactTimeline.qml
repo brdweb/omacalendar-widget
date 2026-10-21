@@ -34,7 +34,7 @@ Item {
   }
 
   function hasAllDayEvents() {
-    for (var index = 0; index < dayCount; index++) {
+    for (let index = 0; index < dayCount; index++) {
       if (allDayFor(index).length > 0) return true
     }
     return false
