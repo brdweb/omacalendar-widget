@@ -26,7 +26,7 @@ Item {
   readonly property int taskCount: rows.filter(function(row) { return row.kind === "task" }).length
 
   function positionAtSelected() {
-    for (var index = 0; index < rows.length; index++) {
+    for (let index = 0; index < rows.length; index++) {
       if (rows[index].kind === "task" && String(rows[index].task.id) === selectedTaskId) {
         taskList.positionViewAtIndex(index, ListView.Contain)
         return
