@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Instructions for coding agents in this repository (Cursor cloud agents, Codex, Claude Code). The maintainer reviews and merges.
+Instructions for coding agents in this repository (Cursor cloud agents, Codex, Claude Code).
 
 Personal or machine-specific notes never go in tracked files. Claude Code auto-loads the gitignored `CLAUDE.local.md`; Codex users put personal guidance in `~/.codex/AGENTS.md`; `AGENTS.local.md` is a gitignored scratch file that tools don't load automatically.
 
@@ -77,7 +77,16 @@ Use Conventional Commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `build
 
 ## Review guidance
 
-Bugbot, Codex, and Claude should focus on IPC correctness (protocol major 2, capability gating from `system.info`, mutation envelopes, undo, and Tasks only when IPC 2.2 lists `taskLists.list` and `tasks.list`), presentation-only snapshots (no credentials, provider URLs, ETags, sync tokens, or raw payloads), the fake-daemon test boundary, QML keyboard and layout behavior, and meeting links using `xdg-open` with no arbitrary commands taken from daemon data. The agent that opened the PR fixes review findings. The maintainer merges.
+Codex (`chatgpt-codex-connector`) is the only automatic PR reviewer. It should focus on IPC correctness (protocol major 2, capability gating from `system.info`, mutation envelopes, undo, and Tasks only when IPC 2.2 lists `taskLists.list` and `tasks.list`), presentation-only snapshots (no credentials, provider URLs, ETags, sync tokens, or raw payloads), the fake-daemon test boundary, QML keyboard and layout behavior, and meeting links using `xdg-open` with no arbitrary commands taken from daemon data. Claude Code is optional: someone calls it in with an `@claude` comment, where configured, for risky PRs only, and it never runs automatically. The agent that opened the PR fixes review findings.
+
+## Review and merge policy
+
+- Bots never post GitHub approvals.
+- A PR merges only after CI is green and every Codex review thread is fixed and resolved.
+- The triage bot may auto-merge only patch and minor dependency bumps, security fixes, docs, tests, and small fixes under about 50 changed lines.
+- Other bots and agents merge only work the maintainer has explicitly approved.
+- Everything else waits for the maintainer: major version bumps, auth, payments, database migrations, CI or release configuration, secrets, and large or ambiguous PRs.
+- Squash merge. Commits carry no `Co-Authored-By` or other AI co-author trailers.
 
 ## Learning
 
