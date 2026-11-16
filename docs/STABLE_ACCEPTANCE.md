@@ -26,12 +26,13 @@ Do not invent a commit or change the installer to an unpublished target.
   `48edffff66ca72b4d8058cbb9a9009e701d0cc45`, IPC 2.3.
 - Full suite passes IPC scenarios, keyboard, agenda, default calendar,
   read-only details, Tasks panel and layout at 100% and 125%.
-- BLOCKED: at 200%, month body content is 390 logical pixels while the
-  viewport is 372. The unchanged 0.2.0 checkout fails the same layout gate.
-- BLOCKED: isolated synthetic preview capture fails the strict OCR allowlist
-  (five unrecognized tokens). No rejected screenshot is published.
+- Resolved: short logical screens use compact calendar rows. Layout probes
+  pass at 100%, 125% and 200%; the original 200% regression failed before the fix.
+- Resolved: explicit Omarchy Color imports restore theme colours. The new
+  synthetic screenshot passes metadata and strict OCR privacy validation.
+  The reviewed OCR spelling agends maps only to the visible Agenda label.
 - Capture harness now tolerates the current Omarchy Color API without the
-  removed loadShell function. Screenshot qualification still needs completion.
+  removed loadShell function. Screenshot qualification now passes.
 
 Desktop-only features remain desktop-only: full reminder editing, colour
 editing, copy/cut/paste, hidden weekends/declined events and custom week length.

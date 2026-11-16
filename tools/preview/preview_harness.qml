@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import qs.Commons
+import qs.Commons as Commons
 import "../.." as Oma
 
 ShellRoot {
@@ -89,17 +90,17 @@ ShellRoot {
   }
 
   function applyFixtureTheme() {
-    // Color.qml reads the installed user's theme path by design. Re-apply the
+    // Commons.Color.qml reads the installed user's theme path by design. Re-apply the
     // stock fallback palette and empty shell overrides inside this synthetic
     // harness so the committed capture does not depend on workstation state.
-    Color.foreground = "#cacccc"
-    Color.background = "#101315"
-    Color.accent = "#7aa2f7"
-    Color.urgent = "#a55555"
-    Color.muted = "#707880"
-    if (typeof Color.loadShell === "function") Color.loadShell("")
-    else Color.shellValues = ({})
-    if (typeof Color.loadUserShell === "function") Color.loadUserShell("")
+    Commons.Color.foreground = "#cacccc"
+    Commons.Color.background = "#101315"
+    Commons.Color.accent = "#7aa2f7"
+    Commons.Color.urgent = "#a55555"
+    Commons.Color.muted = "#707880"
+    if (typeof Commons.Color.loadShell === "function") Commons.Color.loadShell("")
+    else Commons.Color.shellValues = ({})
+    if (typeof Commons.Color.loadUserShell === "function") Commons.Color.loadUserShell("")
   }
 
   Component.onCompleted: {

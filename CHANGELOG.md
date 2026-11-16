@@ -8,6 +8,10 @@ begin.
 
 ## [1.0.0] - Unreleased
 
+- Qualify Omarchy theme references to avoid Qt Color type collisions.
+- Fit all six calendar rows on short logical screens at 200% scale.
+- Regenerate and validate the synthetic release screenshot.
+
 - Target OmaCalendar 2.1.0 / IPC 2.3 while retaining IPC 2.0 compatibility.
 - Use the app's first-day-of-week preference unless the widget overrides it.
 - Apply timed, all-day and per-calendar default reminders to new events;

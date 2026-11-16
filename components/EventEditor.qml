@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import qs.Commons
+import qs.Commons as Commons
 import qs.Ui
 import "../CalendarModel.js" as Model
 
@@ -13,7 +14,7 @@ Item {
   property var preferences: ({})
   property date selectedDate: new Date()
   property string defaultCalendarId: ""
-  property color foreground: Color.foreground
+  property color foreground: Commons.Color.foreground
   property int calendarIndex: 0
   property bool allDay: false
   property string guestNotificationPolicy: "none"
@@ -327,7 +328,7 @@ Item {
       id: validationLabel
       width: parent.width
       visible: text !== ""
-      color: Color.urgent
+      color: Commons.Color.urgent
       font.family: Style.font.family
       font.pixelSize: Style.font.bodySmall
       wrapMode: Text.WordWrap

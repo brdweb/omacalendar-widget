@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Controls
 import Quickshell
 import qs.Commons
+import qs.Commons as Commons
 import qs.Ui
 import "CalendarModel.js" as Model
 import "components" as Components
@@ -18,7 +19,7 @@ Panel {
   property var hostWidget: null
   property alias client: daemonClient
   readonly property var barIdentity: hostWidget || root
-  readonly property color contentForeground: bar ? bar.foreground : Color.foreground
+  readonly property color contentForeground: bar ? bar.foreground : Commons.Color.foreground
   readonly property string contentFontFamily: bar ? bar.fontFamily : Style.font.family
   readonly property real bodyViewportHeight: panelScroll.height
   readonly property real bodyContentHeight: panelScroll.contentHeight
@@ -560,7 +561,7 @@ Panel {
                 text: root.currentEvent
                   ? "NOW · " + Model.eventTitle(root.currentEvent) + " · " + Model.upNextLabel(root.currentEvent, root.today)
                   : ""
-                color: Color.accent
+                color: Commons.Color.accent
                 font.family: root.contentFontFamily
                 font.pixelSize: Style.font.caption
                 font.bold: true
@@ -623,8 +624,8 @@ Panel {
             visible: daemonClient.undoToken !== ""
             width: parent.width
             implicitHeight: visible ? undoRow.implicitHeight + Style.space(10) : 0
-            color: Style.selectedFillFor(root.contentForeground, Color.accent)
-            borderSpec: Border.controlSpec("normal", root.contentForeground, Color.accent)
+            color: Style.selectedFillFor(root.contentForeground, Commons.Color.accent)
+            borderSpec: Border.controlSpec("normal", root.contentForeground, Commons.Color.accent)
             radius: Style.cornerRadius
 
             Row {
@@ -832,6 +833,9 @@ Panel {
 
             Components.MonthGrid {
               id: monthGrid
+              // Preserve all six rows on short logical screens (for example 200% scale).
+              cellHeight: Style.space(panel.availableCardHeight > 0
+                && panel.availableCardHeight < Style.space(520) ? 30 : 34)
               year: root.viewYear
               month: root.viewMonth
               today: root.today
