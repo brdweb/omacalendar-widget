@@ -97,8 +97,9 @@ ShellRoot {
     Color.accent = "#7aa2f7"
     Color.urgent = "#a55555"
     Color.muted = "#707880"
-    Color.loadShell("")
-    Color.loadUserShell("")
+    if (typeof Color.loadShell === "function") Color.loadShell("")
+    else Color.shellValues = ({})
+    if (typeof Color.loadUserShell === "function") Color.loadUserShell("")
   }
 
   Component.onCompleted: {

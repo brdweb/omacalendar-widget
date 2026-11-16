@@ -79,6 +79,10 @@ Item {
     }
 
     function onSnapshotUpdated() {
+      if (root.scenario === "happy" && client.preferences.firstDayOfWeek !== 6) {
+        root.fail("IPC 2.3 shared preferences were not loaded")
+        return
+      }
       if (client.connectionState !== "ready") {
         root.fail("snapshot arrived outside the ready state")
         return

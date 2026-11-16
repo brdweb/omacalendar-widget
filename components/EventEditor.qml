@@ -10,6 +10,7 @@ Item {
 
   property var event: null
   property var calendars: []
+  property var preferences: ({})
   property date selectedDate: new Date()
   property string defaultCalendarId: ""
   property color foreground: Color.foreground
@@ -71,18 +72,7 @@ Item {
   }
 
   function parseLocal(value) {
-    var match = String(value || "").trim().match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?$/)
-    if (!match) return null
-    var year = Number(match[1])
-    var month = Number(match[2]) - 1
-    var day = Number(match[3])
-    var hour = Number(match[4] || 0)
-    var minute = Number(match[5] || 0)
-    var date = new Date(year, month, day, hour, minute, 0, 0)
-    if (isNaN(date.getTime()) || date.getFullYear() !== year || date.getMonth() !== month
-        || date.getDate() !== day || date.getHours() !== hour || date.getMinutes() !== minute)
-      return null
-    return date
+    return Model.parseLocalEntry(value)
   }
 
   function reset() {
@@ -176,6 +166,8 @@ Item {
       notes: notesField.text,
       allDay: allDay
     }
+    // Omit reminders on edits so the daemon preserves provider metadata.
+    if (!editing) draft.reminders = Model.defaultReminders(preferences, selectedCalendarId, allDay)
     if (allDay) {
       draft.startDate = Model.dateKey(start)
       draft.endDate = Model.dateKey(end)

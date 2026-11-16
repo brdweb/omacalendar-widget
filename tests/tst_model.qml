@@ -5,6 +5,28 @@ import "../CalendarModel.js" as Model
 TestCase {
   name: "CalendarModel"
 
+  function test_flexibleLocalEntry() {
+    compare(Model.parseLocalEntry("2026-11-15 9").getHours(), 9)
+    compare(Model.parseLocalEntry("2026-11-15 9:30 pm").getHours(), 21)
+    compare(Model.parseLocalEntry("2026-11-15 12am").getHours(), 0)
+    verify(Model.parseLocalEntry("2026-02-30 9") === null)
+    verify(Model.parseLocalEntry("2026-11-15 24:00") === null)
+    verify(Model.parseLocalEntry("2026-11-15 13pm") === null)
+    verify(Model.parseLocalEntry("2026-11-15 9:60") === null)
+  }
+
+  function test_sharedPreferences() {
+    compare(Model.normalizedWeekStart(null, 1), 1)
+    compare(Model.appWeekStart(6, 1), 6)
+    compare(Model.appWeekStart(7, 1), 0)
+    compare(Model.appWeekStart(0, 6), 6)
+    compare(Model.defaultReminders({defaultReminderMinutes: 30, calendarDefaultReminders: {local: -5}}, "local", false)[0].minutes, 30)
+    compare(Model.defaultReminders({}, "local", false)[0].minutes, 15)
+    compare(Model.defaultReminders({defaultAllDayReminderMinutes: 60}, "local", true)[0].minutes, 60)
+    compare(Model.defaultReminders({calendarDefaultReminders: {local: "none"}}, "local", false).length, 0)
+    compare(Model.defaultReminders({defaultReminderMinutes: 30, calendarDefaultReminders: {local: 5}}, "local", false)[0].minutes, 5)
+  }
+
   function test_dateKeyUsesLocalCalendarDate() {
     compare(Model.dateKey(new Date(2026, 7, 28, 23, 30)), "2026-08-28")
     compare(Model.dateKey(null), "")

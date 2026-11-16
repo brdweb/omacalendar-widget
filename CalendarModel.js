@@ -37,7 +37,8 @@ function stepMonth(year, month, delta) {
 
 function normalizedWeekStart(value, fallback) {
   var numeric = Number(value)
-  if (numeric >= 0 && numeric <= 6) return Math.floor(numeric)
+  if (value !== null && value !== undefined && value !== ""
+      && numeric >= 0 && numeric <= 6) return Math.floor(numeric)
   // Qt uses Sunday=0 in JavaScript dates, while Locale firstDayOfWeek uses
   // Sunday=7. Normalize either representation to the JavaScript convention.
   numeric = Number(fallback)
@@ -599,4 +600,45 @@ function defaultTaskListId(lists) {
     if (!fallback) fallback = String(list.id)
   }
   return fallback
+}
+
+// App preferences use Qt weekdays (1..7), with zero selecting the locale.
+function appWeekStart(value, fallback) {
+  var day = Number(value)
+  return day >= 1 && day <= 7 ? day % 7 : normalizedWeekStart(null, fallback)
+}
+
+function reminderMinutes(value, fallback) {
+  if (value === "none") return -1
+  if (value === null || value === undefined || value === "") return fallback
+  var minutes = Number(value)
+  return isFinite(minutes) && minutes >= 0 ? Math.round(minutes) : fallback
+}
+
+function defaultReminders(preferences, calendarId, allDay) {
+  var values = preferences || {}
+  var value = allDay ? values.defaultAllDayReminderMinutes : values.defaultReminderMinutes
+  var minutes = reminderMinutes(value, 15)
+  var overrides = values.calendarDefaultReminders
+  if (overrides && typeof overrides === "object" && !Array.isArray(overrides)
+      && Object.prototype.hasOwnProperty.call(overrides, calendarId))
+    minutes = reminderMinutes(overrides[calendarId], minutes)
+  if (minutes < 0) return []
+  return [{method: "popup", minutes: Math.round(minutes)}]
+}
+
+// Keep the date unambiguous while accepting the desktop's compact time forms.
+function parseLocalEntry(value) {
+  var match = String(value || "").trim().match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{1,2})(?::(\d{2}))?\s*(am|pm)?)?$/i)
+  if (!match) return null
+  var year = Number(match[1]), month = Number(match[2]) - 1, day = Number(match[3])
+  var hour = Number(match[4] || 0), minute = Number(match[5] || 0)
+  if (match[6]) {
+    if (hour < 1 || hour > 12) return null
+    hour = hour % 12 + (match[6].toLowerCase() === "pm" ? 12 : 0)
+  }
+  var date = new Date(year, month, day, hour, minute, 0, 0)
+  if (date.getFullYear() !== year || date.getMonth() !== month || date.getDate() !== day
+      || date.getHours() !== hour || date.getMinutes() !== minute) return null
+  return date
 }

@@ -122,7 +122,7 @@ ShellRoot {
       var topPanel = root.widgetPanel(topWidget)
       if (!topPanel || topPanel.bodyViewportHeight <= 0
           || topPanel.bodyContentHeight > topPanel.bodyViewportHeight + 1) {
-        root.fail("initial month view clips calendar rows")
+        root.fail("initial month view clips calendar rows: content=" + (topPanel ? topPanel.bodyContentHeight : -1) + ", viewport=" + (topPanel ? topPanel.bodyViewportHeight : -1))
         return
       }
       topPanel.setCenterHoverRevealSuppressed(true)

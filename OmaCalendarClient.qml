@@ -26,6 +26,8 @@ Item {
   property string stateDetail: "Connecting to OmaCalendar…"
   property var serverInfo: ({})
   property var methods: []
+  property var preferences: ({})
+  property bool preferencesLoading: false
   property var snapshot: ({
     revision: 0,
     status: {},
@@ -458,6 +460,7 @@ Item {
         _closeSocket()
         return
       }
+      preferences = ({})
       serverInfo = result || {}
       methods = Array.isArray(result.methods) ? result.methods : []
       if (!supports("widget.snapshot")) {
@@ -488,6 +491,17 @@ Item {
       }
       refreshSnapshot(lastSelection, true)
       refreshTasks()
+    })
+  }
+
+  function refreshPreferences() {
+    if (!supports("settings.getMany") || preferencesLoading) return
+    preferencesLoading = true
+    _request("settings.getMany", {keys: ["firstDayOfWeek", "defaultReminderMinutes",
+      "defaultAllDayReminderMinutes", "calendarDefaultReminders"]}, function(result, error) {
+      root.preferencesLoading = false
+      if (!error && result && result.values && typeof result.values === "object")
+        root.preferences = result.values
     })
   }
 
@@ -539,6 +553,7 @@ Item {
   function refreshSnapshot(selection, forceFull) {
     if (selection) lastSelection = selection
     if (connectionState !== "ready" || !supports("widget.snapshot")) return
+    refreshPreferences()
     var requestFull = forceFull === true || forceNextSnapshot || needsBaseline
     if (activeSnapshotRequest !== "") {
       snapshotRefreshQueued = true
