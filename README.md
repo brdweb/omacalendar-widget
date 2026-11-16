@@ -1,6 +1,3 @@
-> **1.0.0 release candidate:** qualification and publication are pending.
-> The installation commands below are for the eventual signed release.
-
 # OmaCalendar Omarchy widget
 
 **Requires the full [OmaCalendar app](https://github.com/brdweb/omacalendar),
@@ -35,7 +32,7 @@ daemon through socket activation and reads its local cache.
 
 ## Install the required OmaCalendar app
 
-The widget targets the published OmaCalendar `2.1.0` app; release qualification is pending.
+The widget targets the published OmaCalendar `2.1.0` app. See [release validation](docs/STABLE_ACCEPTANCE.md) for the tested scope and accepted limitations.
 Download its checksummed, attested native Arch package, install it, and enable
 the on-demand daemon socket before installing the widget:
 

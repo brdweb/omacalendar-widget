@@ -6,7 +6,7 @@ Personal or machine-specific notes never go in tracked files. Claude Code auto-l
 
 ## Project
 
-OmaCalendar widget (`org.omacalendar.widget`, v0.2.0, MIT) is a QML/JavaScript Quickshell plugin for the Omarchy bar. It is a pure presentation client. Calendar data comes from `omacalendard` as newline-delimited JSON on the user-local Unix socket (IPC major 2). The widget has no database access, no credentials, and no direct provider networking. It is qualified with OmaCalendar 2.0.0 over IPC 2.2 and still works with OmaCalendar 1.x (IPC 2.0 and 2.1) without the Tasks view. It needs Omarchy 4.0 or newer and Quickshell 0.3.1 or newer. Current published release: v0.2.0 (2026-09-30). Prepared candidate: v1.0.0 targeting OmaCalendar 2.1.0 / IPC 2.3; acceptance pending.
+OmaCalendar widget (`org.omacalendar.widget`, v0.2.0, MIT) is a QML/JavaScript Quickshell plugin for the Omarchy bar. It is a pure presentation client. Calendar data comes from `omacalendard` as newline-delimited JSON on the user-local Unix socket (IPC major 2). The widget has no database access, no credentials, and no direct provider networking. It is qualified with OmaCalendar 2.0.0 over IPC 2.2 and still works with OmaCalendar 1.x (IPC 2.0 and 2.1) without the Tasks view. It needs Omarchy 4.0 or newer and Quickshell 0.3.1 or newer. Current published release: v0.2.0 (2026-09-30). Release 1.0.0 targets OmaCalendar 2.1.0 / IPC 2.3; see docs/STABLE_ACCEPTANCE.md for qualification and accepted limitations.
 
 - `BarWidget.qml` — bar entry point (`manifest.json` `entryPoints.barWidget`).
 - `Panel.qml` — popup panel.

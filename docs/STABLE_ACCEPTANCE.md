@@ -1,7 +1,6 @@
 # Release validation
 
-Widget 1.0.0 targets OmaCalendar 2.1.0 / IPC 2.3. This is a prepared candidate,
-not a published or owner-accepted release. Historical 0.2.0 acceptance remains
+Widget 1.0.0 targets OmaCalendar 2.1.0 / IPC 2.3. The owner explicitly approved public release after local installation and disclosure of the remaining live-test limitations. Historical 0.2.0 acceptance remains
 in Git history and does not approve the changed runtime.
 
 Run `tests/run-portable.sh` and `tests/run.sh` against synthetic fixture data.
@@ -41,3 +40,16 @@ Do not invent a commit or change the installer to an unpublished target.
 Desktop-only features remain desktop-only: full reminder editing, colour
 editing, copy/cut/paste, hidden weekends/declined events and custom week length.
 The widget continues to offer More options in app for advanced editing.
+
+## Owner-approved limitations
+
+The owner directed public release after being told that live event editing and
+desktop handoff remained untested. Their acceptance gates represent approval
+of those disclosed limitations, not claims that the tests were performed.
+Removal of the newly installed candidate and physical mixed-monitor testing
+were also not performed. Automated mutation, handoff-related contracts and
+scale coverage do not substitute for those live checks.
+
+The artifacts gate records the successful pre-tag packaging rehearsal. Final
+signed assets, checksums and attestations are verified after the release
+workflow drafts them and before the draft is made public.
