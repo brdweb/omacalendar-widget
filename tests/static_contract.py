@@ -114,6 +114,14 @@ class StaticContractTest(unittest.TestCase):
             for binding in expected:
                 self.assertIn(binding, source)
 
+    def test_theme_singleton_is_qualified_against_qt_color_type(self) -> None:
+        paths = list(ROOT.glob("*.qml")) + list((ROOT / "components").glob("*.qml"))
+        for path in paths:
+            source = path.read_text()
+            if "Color." in source:
+                self.assertIn("import qs.Commons as Commons", source, str(path))
+                self.assertNotRegex(source, r"(?<!Commons\.)\bColor\.", str(path))
+
     def test_manifest_identity_and_compatibility(self) -> None:
         manifest = json.loads(text("manifest.json"))
         self.assertEqual(manifest["id"], "org.omacalendar.widget")

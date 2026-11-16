@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import qs.Commons
+import qs.Commons as Commons
 import qs.Ui
 import "../CalendarModel.js" as Model
 
@@ -12,7 +13,7 @@ Item {
   property var events: []
   property var calendars: []
   property int selectedIndex: -1
-  property color foreground: Color.foreground
+  property color foreground: Commons.Color.foreground
   property string fontFamily: Style.font.family
   property bool showDate: false
   property bool active: false
@@ -86,9 +87,9 @@ Item {
       height: root.rowHeight
       radius: Style.cornerRadius
       color: index === root.selectedIndex
-        ? Style.selectedFillFor(root.foreground, Color.accent)
+        ? Style.selectedFillFor(root.foreground, Commons.Color.accent)
         : rowMouse.containsMouse
-          ? Style.hoverFillFor(root.foreground, Color.accent)
+          ? Style.hoverFillFor(root.foreground, Commons.Color.accent)
           : "transparent"
 
       Accessible.role: Accessible.Button
@@ -101,7 +102,7 @@ Item {
         width: Style.space(3)
         height: parent.height - Style.space(12)
         radius: width / 2
-        color: Model.calendarColor(eventRow.modelData, root.calendars, Color.accent)
+        color: Model.calendarColor(eventRow.modelData, root.calendars, Commons.Color.accent)
       }
 
       Column {
@@ -136,7 +137,7 @@ Item {
             else if (eventRow.modelData.failed) values.push("Failed")
             return values.filter(function(value) { return value !== "" }).join(" · ")
           }
-          color: eventRow.modelData.failed ? Color.urgent : Qt.darker(root.foreground, 1.4)
+          color: eventRow.modelData.failed ? Commons.Color.urgent : Qt.darker(root.foreground, 1.4)
           font.family: root.fontFamily
           font.pixelSize: Style.font.bodySmall
           elide: Text.ElideRight

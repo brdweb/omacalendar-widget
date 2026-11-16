@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import qs.Commons
+import qs.Commons as Commons
 import qs.Ui
 import "CalendarModel.js" as Model
 
@@ -126,7 +127,7 @@ BarWidget {
       width: Style.space(5)
       height: width
       radius: width / 2
-      color: Color.accent
+      color: Commons.Color.accent
     }
   }
 }

@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import qs.Commons
+import qs.Commons as Commons
 import qs.Ui
 import "../CalendarModel.js" as Model
 
@@ -15,7 +16,7 @@ Item {
   property date today: new Date()
   property bool busy: false
   property bool actionsEnabled: true
-  property color foreground: Color.foreground
+  property color foreground: Commons.Color.foreground
   property string fontFamily: Style.font.family
 
   signal completeRequested(var task)
@@ -76,7 +77,7 @@ Item {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: Style.space(4)
         text: row.header ? row.modelData.label + " · " + row.modelData.count : ""
-        color: row.modelData.key === "overdue" ? Color.urgent : Qt.darker(root.foreground, 1.4)
+        color: row.modelData.key === "overdue" ? Commons.Color.urgent : Qt.darker(root.foreground, 1.4)
         font.family: root.fontFamily
         font.pixelSize: Style.font.caption
         font.bold: true
@@ -88,9 +89,9 @@ Item {
         anchors.fill: parent
         radius: Style.cornerRadius
         color: row.selected
-          ? Style.selectedFillFor(root.foreground, Color.accent)
+          ? Style.selectedFillFor(root.foreground, Commons.Color.accent)
           : rowMouse.containsMouse
-            ? Style.hoverFillFor(root.foreground, Color.accent)
+            ? Style.hoverFillFor(root.foreground, Commons.Color.accent)
             : "transparent"
 
         Accessible.role: Accessible.Button
@@ -103,7 +104,7 @@ Item {
           width: Style.space(3)
           height: parent.height - Style.space(12)
           radius: width / 2
-          color: row.header ? "transparent" : (row.modelData.color || Color.accent)
+          color: row.header ? "transparent" : (row.modelData.color || Commons.Color.accent)
         }
 
         PanelActionButton {
@@ -148,7 +149,7 @@ Item {
               if (row.task.dirty) values.push("Syncing")
               return values.filter(function(value) { return value !== "" }).join(" · ")
             }
-            color: row.overdue ? Color.urgent : Qt.darker(root.foreground, 1.4)
+            color: row.overdue ? Commons.Color.urgent : Qt.darker(root.foreground, 1.4)
             font.family: root.fontFamily
             font.pixelSize: Style.font.bodySmall
             elide: Text.ElideRight

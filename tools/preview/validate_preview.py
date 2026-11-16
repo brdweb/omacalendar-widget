@@ -58,10 +58,10 @@ STATIC_PREVIEW_TEXT_ALLOWLIST = (
 CALENDAR_DAY_TOKENS = frozenset(str(day) for day in range(1, 32))
 FIXTURE_DATE_TIME_TOKENS = frozenset({"00", "09", "1100", "1400", "2026", "45m"})
 # Tesseract 5.5 currently merges nearby glyphs in the committed image. These
-# reviewed artifacts are tolerated explicitly instead of weakening the entire
+# reviewed artifacts (including Agenda read as agends) are tolerated explicitly instead of weakening the entire
 # OCR result to a denylist.
 KNOWN_TESSERACT_NOISE_TOKENS = frozenset(
-    {"0", "320", "330", "allday", "anew", "m", "vweek"}
+    {"agends", "0", "320", "330", "allday", "anew", "m", "vweek"}
 )
 PRIVATE_TEXT_PATTERNS = (
     re.compile(r"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}", re.IGNORECASE),

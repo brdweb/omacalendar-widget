@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import qs.Commons
+import qs.Commons as Commons
 import "../CalendarModel.js" as Model
 
 Item {
@@ -12,7 +13,7 @@ Item {
   property int dayCount: 1
   property var events: []
   property var calendars: []
-  property color foreground: Color.foreground
+  property color foreground: Commons.Color.foreground
   property string fontFamily: Style.font.family
   property real hourHeight: Style.space(42)
   readonly property real gutterWidth: Style.space(42)
@@ -56,7 +57,7 @@ Item {
         height: dayHeaders.height
         text: Qt.formatDate(root.dayAt(index), root.dayCount === 1 ? "dddd, MMM d" : "ddd d")
         color: Model.dateKey(root.dayAt(index)) === Model.dateKey(new Date())
-          ? Color.accent : root.foreground
+          ? Commons.Color.accent : root.foreground
         font.family: root.fontFamily
         font.pixelSize: Style.font.caption
         font.bold: true
@@ -83,9 +84,9 @@ Item {
         width: root.dayWidth
         height: allDayBand.height
         color: dayEvents.length > 0
-          ? Style.selectedFillFor(root.foreground, Color.accent) : "transparent"
+          ? Style.selectedFillFor(root.foreground, Commons.Color.accent) : "transparent"
         border.width: dayEvents.length > 0 ? Math.max(1, Style.normalBorderWidth) : 0
-        border.color: Color.accent
+        border.color: Commons.Color.accent
         radius: Style.cornerRadius
 
         Text {
@@ -188,9 +189,9 @@ Item {
           (modelData.endMinute - modelData.startMinute) / 60 * root.hourHeight - Style.space(2))
         radius: Style.cornerRadius
         color: Style.selectedFillFor(root.foreground,
-          Model.calendarColor(modelData.event, root.calendars, Color.accent))
+          Model.calendarColor(modelData.event, root.calendars, Commons.Color.accent))
         border.width: Math.max(1, Style.normalBorderWidth)
-        border.color: Model.calendarColor(modelData.event, root.calendars, Color.accent)
+        border.color: Model.calendarColor(modelData.event, root.calendars, Commons.Color.accent)
         clip: true
 
         Text {

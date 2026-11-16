@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import qs.Commons
+import qs.Commons as Commons
 import qs.Ui
 import "../CalendarModel.js" as Model
 
@@ -14,7 +15,7 @@ Item {
   property date selectedDate: new Date()
   property int weekStart: 1
   property var marks: ({})
-  property color foreground: Color.foreground
+  property color foreground: Commons.Color.foreground
   property string fontFamily: Style.font.family
 
   signal dateSelected(date value)
@@ -27,7 +28,7 @@ Item {
     return values
   }
   readonly property real cellWidth: Style.space(38)
-  readonly property real cellHeight: Style.space(34)
+  property real cellHeight: Style.space(34)
   readonly property real spacing: Style.space(2)
 
   implicitWidth: cellWidth * 7 + spacing * 6
@@ -107,12 +108,12 @@ Item {
         height: root.cellHeight
         radius: Style.cornerRadius
         color: modelData.selected
-          ? Style.selectedFillFor(root.foreground, Color.accent)
+          ? Style.selectedFillFor(root.foreground, Commons.Color.accent)
           : dayMouse.containsMouse
-            ? Style.hoverFillFor(root.foreground, Color.accent)
+            ? Style.hoverFillFor(root.foreground, Commons.Color.accent)
             : "transparent"
         border.width: modelData.today ? Math.max(1, Style.normalBorderWidth) : 0
-        border.color: Color.accent
+        border.color: Commons.Color.accent
         opacity: modelData.inMonth ? 1 : 0.42
 
         Accessible.role: Accessible.Button
@@ -144,7 +145,7 @@ Item {
               width: Style.space(3)
               height: width
               radius: width / 2
-              color: Color.accent
+              color: Commons.Color.accent
             }
           }
         }
