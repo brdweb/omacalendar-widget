@@ -16,11 +16,11 @@
     },
     "install_upgrade_remove": {
       "status": "pending",
-      "evidence": "Repeat qualification for the 1.0.0 candidate; previous release evidence does not approve this runtime."
+      "evidence": "Owner-authorized local upgrade on 2026-11-15 from installed 0.1.3 to runtime 26972c11e75e7cdadccca898fe72c976c627a0f2 completed through widgetctl restore/install and shell restart. All 62 installed files matched the source; widgetctl reported installed, shell ping returned ok and Hyprland reported no configuration errors. Old widget and configuration retained for rollback. Removal of the new candidate has not been tested."
     },
     "transactional_restore": {
-      "status": "pending",
-      "evidence": "Repeat qualification for the 1.0.0 candidate; previous release evidence does not approve this runtime."
+      "status": "passed",
+      "evidence": "On 2026-11-15 widgetctl restore dry-run and actual restore succeeded before the owner-authorized local upgrade. It removed the prior managed widget, restored the clock and shortcut, and preserved a centerAnchor changed since prior activation. Candidate reinstall succeeded with healthy managed state after shell restart."
     },
     "views_edges": {
       "status": "passed",
