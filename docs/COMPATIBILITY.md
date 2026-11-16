@@ -2,7 +2,7 @@
 
 | Widget version | OmaCalendar app version | IPC major | Status |
 |---|---|---:|---|
-| `1.0.0` | `2.1.0` | 2 | Candidate; acceptance pending |
+| `1.0.0` | `2.1.0` | 2 | Stable; see acceptance limitations |
 | `0.2.0` | `2.0.0` | 2 | Stable |
 | `0.1.3` | `1.1.0` | 2 | Stable |
 | `0.1.2` | `1.1.0` | 2 | Stable |

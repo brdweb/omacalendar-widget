@@ -6,7 +6,7 @@ begin.
 
 ## [Unreleased]
 
-## [1.0.0] - Unreleased
+## [1.0.0] - 2026-11-16
 
 - Qualify Omarchy theme references to avoid Qt Color type collisions.
 - Fit all six calendar rows on short logical screens at 200% scale.
@@ -18,7 +18,7 @@ begin.
   preserve existing reminders when editing.
 - Fix an unset widget week-start override incorrectly forcing Sunday.
 - Accept compact times such as `9`, `9am` and `9:30 pm` after an ISO date.
-- Reset release acceptance for this candidate; 1.0.0 is not yet published.
+- Record current automated/local-install evidence and owner-approved live-test limitations.
 
 ## [0.2.0] - 2026-09-30
 

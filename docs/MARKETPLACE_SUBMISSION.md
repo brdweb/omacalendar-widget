@@ -17,7 +17,7 @@ calendar
 ### Maintainer notes
 
 Requires a separately installed OmaCalendar daemon exposing IPC 2.0 or newer.
-Widget 1.0.0 targets OmaCalendar 2.1.0 (qualification pending), but the projects'
+Widget 1.0.0 targets OmaCalendar 2.1.0 (see the release acceptance record for limitations), but the projects'
 versions and release schedules are independent. The desktop application does
 not need to remain open; systemd user socket activation starts the daemon on
 demand. Install the qualified app's checksummed and attested native package with:
