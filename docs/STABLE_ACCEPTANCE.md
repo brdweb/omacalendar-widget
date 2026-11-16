@@ -25,7 +25,11 @@ Do not invent a commit or change the installer to an unpublished target.
 - Signed published app contract verified: v2.1.0, commit
   `48edffff66ca72b4d8058cbb9a9009e701d0cc45`, IPC 2.3.
 - Full suite passes IPC scenarios, keyboard, agenda, default calendar,
-  read-only details, Tasks panel and layout at 100% and 125%.
+  read-only details, Tasks panel and layout at 100%, 125% and 200%.
+- Exact merged runtime: `26972c11e75e7cdadccca898fe72c976c627a0f2`.
+  Reference integration CI run `43796164057` and Gitleaks passed.
+  A separate local reference-container attempt failed during dependency
+  provisioning before the suite ran; the installed-Omarchy suite passed.
 - Resolved: short logical screens use compact calendar rows. Layout probes
   pass at 100%, 125% and 200%; the original 200% regression failed before the fix.
 - Resolved: explicit Omarchy Color imports restore theme colours. The new

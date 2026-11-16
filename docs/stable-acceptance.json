@@ -2,17 +2,17 @@
   "stableVersion": "1.0.0",
   "candidateVersion": "1.0.0",
   "candidateOmaCalendarVersion": "2.1.0",
-  "evidenceCommit": "",
+  "evidenceCommit": "26972c11e75e7cdadccca898fe72c976c627a0f2",
   "acceptedBy": "",
   "acceptedAt": "",
   "gates": {
     "automated": {
-      "status": "pending",
-      "evidence": "Repeat qualification for the 1.0.0 candidate; previous release evidence does not approve this runtime."
+      "status": "passed",
+      "evidence": "Passed full tests/run.sh on installed Omarchy at 100%, 125% and 200%, plus portable contracts and synthetic preview validation. Reference CI run 43796164057 passed on PR #25; merged runtime is unchanged at 26972c11e75e7cdadccca898fe72c976c627a0f2."
     },
     "artifacts": {
       "status": "pending",
-      "evidence": "Repeat qualification for the 1.0.0 candidate; previous release evidence does not approve this runtime."
+      "evidence": "Deterministic source archive rehearsal produced byte-identical archives and passed verify-package.sh. Signed release assets and attestations remain pending."
     },
     "install_upgrade_remove": {
       "status": "pending",
@@ -23,28 +23,28 @@
       "evidence": "Repeat qualification for the 1.0.0 candidate; previous release evidence does not approve this runtime."
     },
     "views_edges": {
-      "status": "pending",
-      "evidence": "Repeat qualification for the 1.0.0 candidate; previous release evidence does not approve this runtime."
+      "status": "passed",
+      "evidence": "Synthetic fixtures passed agenda, default calendar, read-only details, Tasks panel, model date edge cases and layouts. Current-machine 200% clipping regression now passes. No live provider acceptance is claimed."
     },
     "keyboard": {
-      "status": "pending",
-      "evidence": "Repeat qualification for the 1.0.0 candidate; previous release evidence does not approve this runtime."
+      "status": "passed",
+      "evidence": "Full suite keyboard tests and Tasks-panel selection checks passed on current installed Omarchy and in reference CI run 43796164057."
     },
     "real_mutations": {
       "status": "pending",
       "evidence": "Repeat qualification for the 1.0.0 candidate; previous release evidence does not approve this runtime."
     },
     "resilience": {
-      "status": "pending",
-      "evidence": "Repeat qualification for the 1.0.0 candidate; previous release evidence does not approve this runtime."
+      "status": "passed",
+      "evidence": "All 16 fake-daemon scenarios passed, including malformed and oversized input, reconnect, late start, cache, revision gaps, mutations, tasks and IPC 2.1 compatibility."
     },
     "desktop_handoff": {
       "status": "pending",
       "evidence": "Repeat qualification for the 1.0.0 candidate; previous release evidence does not approve this runtime."
     },
     "mixed_scale_theme": {
-      "status": "pending",
-      "evidence": "Repeat qualification for the 1.0.0 candidate; previous release evidence does not approve this runtime."
+      "status": "passed",
+      "evidence": "Layout checks passed at 100%, 125% and 200% on installed Omarchy and in reference CI. Theme singleton ambiguity is fixed; regenerated synthetic preview passed strict OCR/metadata validation. Physical mixed-monitor testing was not performed."
     }
   }
 }
