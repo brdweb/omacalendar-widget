@@ -1,29 +1,38 @@
 # Release validation
 
-The maintainer directed stable publication of 0.2.0 on 2026-09-30. The live
-checks below were run by Claude Code on the maintainer's current Omarchy
-laptop, against the maintainer's own OmaCalendar 2.0.0 daemon and calendar
-data, using the exact evidence-commit runtime installed through
-omacalendar-widgetctl.
+Widget 1.0.0 targets OmaCalendar 2.1.0 / IPC 2.3. This is a prepared candidate,
+not a published or owner-accepted release. Historical 0.2.0 acceptance remains
+in Git history and does not approve the changed runtime.
 
-0.2.0 adds a Tasks view for OmaCalendar 2.0 (IPC 2.2) and fixes a reconnect
-defect: with Quickshell 0.3.1 a widget that started before the daemon's socket
-was listening never connected. Live, the Tasks view listed, added and completed
-synthetic tasks in the device-only list only; no provider task list or event
-was changed. Automated coverage includes IPC reconnect, late start, offline
-cache, mutations, task paging and subscriptions, an IPC 2.1 daemon without
-tasks, keyboard actions, agenda positioning, default calendar, read-only
-details, the Tasks panel, and layout at 100%, 125% and 200% scale.
+Run `tests/run-portable.sh` and `tests/run.sh` against synthetic fixture data.
+Record the tested commit and evidence in `stable-acceptance.json`. Repeat
+install/upgrade/remove, restore, views, keyboard, mutations, resilience,
+desktop handoff and theme/scale acceptance before marking the gates passed.
+Never use the live daemon during automated testing.
 
-Upgrading a running shell may keep the previous widget until the shell restarts
-(`omarchy restart shell`). A fresh install and removal from the packaged
-archive, the desktop handoff, event mutations against real data and the late
-start fix were not exercised live this cycle; see stable-acceptance.json for
-exactly what each gate covered.
+After owner acceptance, the maintainer signs the immutable tag. Verify the
+release archive checksums, provenance and SPDX attestations before publication.
+Promote the release-only install branch only to that verified commit.
 
-The signed source archive is checksum-verified and attested with provenance and
-an SPDX file inventory. The release record distinguishes automated evidence
-from maintainer acceptance. It does not certify every display/provider setup.
+The app installer update follows the signed widget tag: update both pins in
+`src/app/appcontroller.cpp` and `scripts/omacalendar-widgetctl`, their contract
+tests, compatibility docs and changelog to v1.0.0 and its exact commit.
+Do not invent a commit or change the installer to an unpublished target.
 
-Use the README for installation, upgrade and removal. Preserve a prior plugin
-snapshot when upgrading. Calendar credentials remain owned by the app daemon.
+## Candidate validation (2026-11-15)
+
+- Portable suite passes, including 27 model tests, release contracts and syntax.
+- Signed published app contract verified: v2.1.0, commit
+  `48edffff66ca72b4d8058cbb9a9009e701d0cc45`, IPC 2.3.
+- Full suite passes IPC scenarios, keyboard, agenda, default calendar,
+  read-only details, Tasks panel and layout at 100% and 125%.
+- BLOCKED: at 200%, month body content is 390 logical pixels while the
+  viewport is 372. The unchanged 0.2.0 checkout fails the same layout gate.
+- BLOCKED: isolated synthetic preview capture fails the strict OCR allowlist
+  (five unrecognized tokens). No rejected screenshot is published.
+- Capture harness now tolerates the current Omarchy Color API without the
+  removed loadShell function. Screenshot qualification still needs completion.
+
+Desktop-only features remain desktop-only: full reminder editing, colour
+editing, copy/cut/paste, hidden weekends/declined events and custom week length.
+The widget continues to offer More options in app for advanced editing.

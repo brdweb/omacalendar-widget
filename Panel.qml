@@ -56,7 +56,8 @@ Panel {
     ? visibleEvents[selectedEventIndex] : null
   readonly property var upNext: Model.hasEvent(snapshot.upNext) ? snapshot.upNext : null
   readonly property bool hasCachedSnapshot: Number(snapshot.revision || 0) > 0
-  readonly property int weekStart: Model.normalizedWeekStart(setting("weekStart", null), Qt.locale().firstDayOfWeek)
+  readonly property int weekStart: Model.normalizedWeekStart(setting("weekStart", null),
+    Model.appWeekStart(daemonClient.preferences.firstDayOfWeek, Qt.locale().firstDayOfWeek) || 7)
   // IPC 2 snapshots compute this against a fixed window around now, so browsing
   // another month cannot make the bar/popup lose the actual current event.
   // Keep the local derivation as a compatibility fallback for older daemons.
@@ -861,6 +862,7 @@ Panel {
                 height: visible ? implicitHeight : 0
                 event: root.editingEvent
                 calendars: root.calendars
+                preferences: daemonClient.preferences
                 selectedDate: root.selectedDate
                 defaultCalendarId: String(root.snapshot.defaultCalendarId || "")
                 foreground: root.contentForeground

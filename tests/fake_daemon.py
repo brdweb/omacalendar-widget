@@ -169,9 +169,14 @@ class Fixture:
             return Reply(result={
                 "server": "omacalendard-test",
                 "protocolMajor": major,
-                "protocolMinor": 1 if legacy else 2,
-                "methods": METHODS if without_tasks else METHODS + TASK_METHODS,
+                "protocolMinor": 1 if legacy else 3,
+                "methods": (METHODS if without_tasks else METHODS + TASK_METHODS + ["settings.getMany"]),
             })
+
+        if method == "settings.getMany":
+            return Reply(result={"values": {"firstDayOfWeek": 6,
+                "defaultReminderMinutes": 30, "defaultAllDayReminderMinutes": "none",
+                "calendarDefaultReminders": {"local": 5}}})
 
         if method == "system.subscribe":
             topics = message.get("params", {}).get("topics", [])

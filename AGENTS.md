@@ -1,6 +1,6 @@
 # OmaCalendar Widget
 
-QML/JavaScript Quickshell plugin for the Omarchy bar. Connects to `omacalendard` via Unix socket IPC. Current release: v0.2.0 (2026-09-30). Remote: https://github.com/brdweb/omacalendar-widget.git
+QML/JavaScript Quickshell plugin for the Omarchy bar. Connects to `omacalendard` via Unix socket IPC. Current published release: v0.2.0. Prepared candidate: v1.0.0 (acceptance pending). Remote: https://github.com/brdweb/omacalendar-widget.git
 
 ## Architecture
 

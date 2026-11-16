@@ -17,15 +17,15 @@ calendar
 ### Maintainer notes
 
 Requires a separately installed OmaCalendar daemon exposing IPC 2.0 or newer.
-Widget 0.2.0 is qualified with OmaCalendar 2.0.0, but the projects'
+Widget 1.0.0 targets OmaCalendar 2.1.0 (qualification pending), but the projects'
 versions and release schedules are independent. The desktop application does
 not need to remain open; systemd user socket activation starts the daemon on
 demand. Install the qualified app's checksummed and attested native package with:
 
 ```bash
 set -euo pipefail
-app_version=2.0.0
-package=omacalendar-2.0.0-1-x86_64.pkg.tar.zst
+app_version=2.1.0
+package=omacalendar-2.1.0-1-x86_64.pkg.tar.zst
 release_url="https://github.com/brdweb/omacalendar/releases/download/v${app_version}"
 curl -fLO "${release_url}/${package}"
 curl -fLO "${release_url}/SHA256SUMS"
@@ -47,7 +47,7 @@ and provider testing. The widget itself accesses only the user-local
 OmaCalendar socket and does not contact Google or any calendar provider.
 
 Current Omarchy add/update commands follow the repository's remote default
-HEAD. The release-only `main` branch stays at the exact commit of signed tag `v0.2.0`;
+HEAD. The release-only `main` branch must be promoted after acceptance to the exact commit of signed tag `v1.0.0`;
 development commits are not merged there.
 Users who require an immutable snapshot can use the checksummed,
 GitHub-attested signed-release archive documented in the root README.

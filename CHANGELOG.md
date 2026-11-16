@@ -6,6 +6,16 @@ begin.
 
 ## [Unreleased]
 
+## [1.0.0] - Unreleased
+
+- Target OmaCalendar 2.1.0 / IPC 2.3 while retaining IPC 2.0 compatibility.
+- Use the app's first-day-of-week preference unless the widget overrides it.
+- Apply timed, all-day and per-calendar default reminders to new events;
+  preserve existing reminders when editing.
+- Fix an unset widget week-start override incorrectly forcing Sunday.
+- Accept compact times such as `9`, `9am` and `9:30 pm` after an ISO date.
+- Reset release acceptance for this candidate; 1.0.0 is not yet published.
+
 ## [0.2.0] - 2026-09-30
 
 ### Added
